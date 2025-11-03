@@ -3,28 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Role;
-use Illuminate\Support\Facades\Auth;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
-class DashboardController extends Controller
+class EmployeeController extends Controller
 {
-    private $role, $menu, $submenu;
-
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            $roleId = Auth::user()->role_id;
-            $this->role = Role::where('id', $roleId)->first();
-            $this->menu = $this->role->role_access->filter(function ($item) {
-                return $item['menu_id'];
-            })->values();
-            $this->submenu = $this->role->role_access->filter(function ($item) {
-                return $item['submenu_id'];
-            })->values();
-            return $next($request);
-        });
-    }
     /**
      * Display a listing of the resource.
      *
@@ -33,9 +14,10 @@ class DashboardController extends Controller
     public function index()
     {
         $data = [
-            'js' => 'dashboard'
+            'title' => 'tes',
+            'js' => 'employee'
         ];
-        return view('dashboard', $data);
+        return view('employee.index', $data);
     }
 
     /**

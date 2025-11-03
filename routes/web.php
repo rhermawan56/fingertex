@@ -4,6 +4,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -24,6 +25,7 @@ Route::get('/updatpassword', [LoginController::class, 'updatpassword'])->name('u
 
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('employee', [EmployeeController::class, 'index'])->name('employee');
 });
 
 Route::get('/test', function () {
