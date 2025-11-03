@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:29 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'PHPUnit\Framework\TestCase' not found in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php on line 7
+[31-Oct-2025 01:50:27 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'PHPUnit\Framework\TestCase' not found in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php on line 7
+[31-Oct-2025 01:51:03 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'PHPUnit\Framework\TestCase' not found in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php on line 7
+[31-Oct-2025 01:55:47 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'PHPUnit\Framework\TestCase' not found in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/Unit/ExampleTest.php on line 7

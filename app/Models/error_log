@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:39 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Auth\User' not found in /home/prat8713/public_html/fingertex/app/Models/User.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Models/User.php on line 11
+[31-Oct-2025 01:50:04 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Auth\User' not found in /home/prat8713/public_html/fingertex/app/Models/User.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Models/User.php on line 11
+[31-Oct-2025 01:51:25 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Auth\User' not found in /home/prat8713/public_html/fingertex/app/Models/User.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Models/User.php on line 11
+[31-Oct-2025 01:55:56 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Auth\User' not found in /home/prat8713/public_html/fingertex/app/Models/User.php:11
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Models/User.php on line 11

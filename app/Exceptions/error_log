@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:37 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Exceptions\Handler' not found in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php on line 8
+[31-Oct-2025 01:50:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Exceptions\Handler' not found in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php on line 8
+[31-Oct-2025 01:51:23 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Exceptions\Handler' not found in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php on line 8
+[31-Oct-2025 01:56:00 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Exceptions\Handler' not found in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Exceptions/Handler.php on line 8

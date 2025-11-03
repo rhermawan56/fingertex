@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Database\Eloquent\Factories\Factory' not found in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php on line 8
+[31-Oct-2025 01:50:36 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Database\Eloquent\Factories\Factory' not found in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php on line 8
+[31-Oct-2025 01:50:47 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Database\Eloquent\Factories\Factory' not found in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php on line 8
+[31-Oct-2025 01:56:04 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Database\Eloquent\Factories\Factory' not found in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/database/factories/UserFactory.php on line 8

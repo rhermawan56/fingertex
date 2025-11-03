@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:08 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Testing\TestCase' not found in /home/prat8713/public_html/fingertex/tests/TestCase.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/TestCase.php on line 7
+[31-Oct-2025 01:49:41 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Testing\TestCase' not found in /home/prat8713/public_html/fingertex/tests/TestCase.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/TestCase.php on line 7
+[31-Oct-2025 01:50:18 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Testing\TestCase' not found in /home/prat8713/public_html/fingertex/tests/TestCase.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/TestCase.php on line 7
+[31-Oct-2025 01:55:29 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Testing\TestCase' not found in /home/prat8713/public_html/fingertex/tests/TestCase.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/tests/TestCase.php on line 7

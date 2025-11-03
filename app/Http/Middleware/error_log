@@ -1,0 +1,112 @@
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php on line 7
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php on line 7
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Auth\Middleware\Authenticate' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php on line 7
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustHosts' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php on line 7
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustProxies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php on line 8
+[31-Oct-2025 01:47:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustHosts' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Auth\Middleware\Authenticate' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php on line 7
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustProxies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php on line 8
+[31-Oct-2025 01:50:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Auth\Middleware\Authenticate' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustProxies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php on line 8
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustHosts' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[31-Oct-2025 01:51:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Auth\Middleware\Authenticate' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/Authenticate.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrimStrings.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustHosts' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustHosts.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Http\Middleware\TrustProxies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/TrustProxies.php on line 8
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/PreventRequestsDuringMaintenance.php on line 7
+[31-Oct-2025 01:56:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Middleware/EncryptCookies.php on line 7

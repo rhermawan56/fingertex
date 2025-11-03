@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:58 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Routing\Controller' not found in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php on line 10
+[31-Oct-2025 01:50:51 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Routing\Controller' not found in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php on line 10
+[31-Oct-2025 01:51:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Routing\Controller' not found in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php on line 10
+[31-Oct-2025 01:56:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Routing\Controller' not found in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Controllers/Controller.php on line 10

@@ -1,0 +1,16 @@
+[31-Oct-2025 01:46:35 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Kernel' not found in /home/prat8713/public_html/fingertex/app/Http/Kernel.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Kernel.php on line 7
+[31-Oct-2025 01:49:59 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Kernel' not found in /home/prat8713/public_html/fingertex/app/Http/Kernel.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Kernel.php on line 7
+[31-Oct-2025 01:51:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Kernel' not found in /home/prat8713/public_html/fingertex/app/Http/Kernel.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Kernel.php on line 7
+[31-Oct-2025 01:55:58 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Http\Kernel' not found in /home/prat8713/public_html/fingertex/app/Http/Kernel.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/app/Http/Kernel.php on line 7

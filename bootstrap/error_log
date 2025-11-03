@@ -1,0 +1,20 @@
+[30-Oct-2025 19:22:17 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/prat8713/public_html/fingertex/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/bootstrap/app.php on line 14
+[31-Oct-2025 01:46:19 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/prat8713/public_html/fingertex/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/bootstrap/app.php on line 14
+[31-Oct-2025 01:49:34 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/prat8713/public_html/fingertex/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/bootstrap/app.php on line 14
+[31-Oct-2025 01:50:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/prat8713/public_html/fingertex/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/bootstrap/app.php on line 14
+[31-Oct-2025 01:55:25 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/prat8713/public_html/fingertex/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/bootstrap/app.php on line 14

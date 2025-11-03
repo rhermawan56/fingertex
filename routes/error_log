@@ -1,0 +1,144 @@
+[30-Oct-2025 20:56:29 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[30-Oct-2025 20:56:29 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:30 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[30-Oct-2025 20:56:31 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:38 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:38 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[30-Oct-2025 20:56:39 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[30-Oct-2025 20:56:41 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[30-Oct-2025 20:56:48 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:51 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:56:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[30-Oct-2025 20:56:58 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[30-Oct-2025 20:57:01 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:57:02 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:57:09 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[30-Oct-2025 20:57:12 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[30-Oct-2025 20:57:14 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:57:15 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[30-Oct-2025 20:57:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[31-Oct-2025 01:46:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[31-Oct-2025 01:46:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[31-Oct-2025 01:46:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/api.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/api.php on line 17
+[31-Oct-2025 01:46:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[31-Oct-2025 01:49:56 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[31-Oct-2025 01:49:56 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/api.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/api.php on line 17
+[31-Oct-2025 01:49:56 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[31-Oct-2025 01:49:56 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[31-Oct-2025 01:50:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[31-Oct-2025 01:50:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16
+[31-Oct-2025 01:50:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[31-Oct-2025 01:50:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/api.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/api.php on line 17
+[31-Oct-2025 01:55:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Broadcast' not found in /home/prat8713/public_html/fingertex/routes/channels.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/channels.php on line 16
+[31-Oct-2025 01:55:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/api.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/api.php on line 17
+[31-Oct-2025 01:55:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Artisan' not found in /home/prat8713/public_html/fingertex/routes/console.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/console.php on line 17
+[31-Oct-2025 01:55:20 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Support\Facades\Route' not found in /home/prat8713/public_html/fingertex/routes/web.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/routes/web.php on line 16

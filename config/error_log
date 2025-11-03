@@ -1,0 +1,268 @@
+[30-Oct-2025 20:56:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[30-Oct-2025 20:56:33 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[30-Oct-2025 20:56:33 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[30-Oct-2025 20:56:41 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[30-Oct-2025 20:56:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[30-Oct-2025 20:56:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[30-Oct-2025 20:56:50 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[30-Oct-2025 20:56:53 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[30-Oct-2025 20:56:57 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[30-Oct-2025 20:57:00 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[30-Oct-2025 20:57:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[30-Oct-2025 20:57:08 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[30-Oct-2025 20:57:13 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[30-Oct-2025 20:57:18 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[30-Oct-2025 20:57:21 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/prat8713/public_html/fingertex/config/view.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/view.php on line 17
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/sanctum.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/sanctum.php on line 16
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/database.php on line 18
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/mail.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/mail.php on line 16
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/services.php on line 18
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/session.php on line 21
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/logging.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/logging.php on line 20
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[31-Oct-2025 01:46:05 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/queue.php on line 16
+[31-Oct-2025 01:46:06 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/hashing.php:32
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/hashing.php on line 32
+[31-Oct-2025 01:46:06 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[31-Oct-2025 01:46:06 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[31-Oct-2025 01:46:06 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/broadcasting.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/broadcasting.php on line 18
+[31-Oct-2025 01:49:49 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/logging.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/logging.php on line 20
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/database.php on line 18
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/mail.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/mail.php on line 16
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/session.php on line 21
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/queue.php on line 16
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/hashing.php:32
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/hashing.php on line 32
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/services.php on line 18
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/broadcasting.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/broadcasting.php on line 18
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/prat8713/public_html/fingertex/config/view.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/view.php on line 17
+[31-Oct-2025 01:49:52 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/sanctum.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/sanctum.php on line 16
+[31-Oct-2025 01:50:28 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/logging.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/logging.php on line 20
+[31-Oct-2025 01:50:31 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/hashing.php:32
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/hashing.php on line 32
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/database.php on line 18
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/prat8713/public_html/fingertex/config/view.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/view.php on line 17
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/session.php on line 21
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/mail.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/mail.php on line 16
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/services.php on line 18
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/sanctum.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/sanctum.php on line 16
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/broadcasting.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/broadcasting.php on line 18
+[31-Oct-2025 01:50:32 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/queue.php on line 16
+[31-Oct-2025 01:55:23 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/services.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/services.php on line 18
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/broadcasting.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/broadcasting.php on line 18
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/filesystems.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/filesystems.php on line 16
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/queue.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/queue.php on line 16
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/app.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/app.php on line 16
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/cache.php on line 18
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/sanctum.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/sanctum.php on line 16
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/logging.php:20
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/logging.php on line 20
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/hashing.php:32
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/hashing.php on line 32
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/mail.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/mail.php on line 16
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function resource_path() in /home/prat8713/public_html/fingertex/config/view.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/view.php on line 17
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/session.php:21
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/session.php on line 21
+[31-Oct-2025 01:55:24 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/prat8713/public_html/fingertex/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/prat8713/public_html/fingertex/config/database.php on line 18
