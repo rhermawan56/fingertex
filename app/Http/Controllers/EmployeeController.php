@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -84,5 +85,23 @@ class EmployeeController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function fetchdata(Request $request)
+    {
+        $data = Employee::getDataEmployees($request)->getOriginalContent();
+
+        // return $data;
+
+        return response()->json([
+            'status' => $data['status'],
+            'messages' => $data['messages'],
+            'draw' => $request['draw'],
+            'recordsTotal' => $data['rows'],
+            'recordsFiltered' => $data['rows'],
+            'data' => $data['data'],
+            'token' => csrf_token(),
+            'request' => $request['columns']
+        ], 200);
     }
 }

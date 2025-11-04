@@ -125,8 +125,8 @@ class WebhookController extends BaseController
         if ($status->getOriginalContent() == 'OK') {
             if ($data->type == 'attlog') {
                 $dataLogin = [
-                    'username' => 'aqew',
-                    'password' => 'aqew123'
+                    'username' => env('API_USERNAME'),
+                    'password' => env('API_PASSWORD')
                 ];
 
                 try {

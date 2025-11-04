@@ -26,6 +26,7 @@ Route::get('/updatpassword', [LoginController::class, 'updatpassword'])->name('u
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('employee', [EmployeeController::class, 'index'])->name('employee');
+    Route::post('employee/fetchdata', [EmployeeController::class, 'fetchdata'])->name('employee');
 });
 
 Route::get('/test', function () {
