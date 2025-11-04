@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Machine;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -89,19 +90,20 @@ class EmployeeController extends Controller
 
     public function fetchdata(Request $request)
     {
-        $data = Employee::getDataEmployees($request)->getOriginalContent();
-
+        $machine = Machine::all();
+        $data = Employee::getDataEmployees($request, $machine)->getOriginalContent();
+        // $data = Employee::getDataEmployees($request, $machine);
         // return $data;
 
         return response()->json([
-            'status' => $data['status'],
-            'messages' => $data['messages'],
+            // 'status' => $data['status'],
+            // 'messages' => $data['messages'],
             'draw' => $request['draw'],
             'recordsTotal' => $data['rows'],
             'recordsFiltered' => $data['rows'],
             'data' => $data['data'],
             'token' => csrf_token(),
-            'request' => $request['columns']
+            'request' => $request->input()
         ], 200);
     }
 }

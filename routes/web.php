@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\MachineController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -27,6 +28,9 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('employee', [EmployeeController::class, 'index'])->name('employee');
     Route::post('employee/fetchdata', [EmployeeController::class, 'fetchdata'])->name('employee');
+
+    Route::resource('absensi/mesinfinger', MachineController::class)->except(['fetchdata'])->names('machine');
+    Route::post('absensi/mesinfinger/fetchdata', [MachineController::class, 'fetchdata'])->name('machine.fetchdata');
 });
 
 Route::get('/test', function () {

@@ -25,7 +25,7 @@ var dataPopUp;
 
 var initData = (function () {
     var tr = document.createElement("tr");
-    var tablename = `${segment}table`;
+    var tablename = `${fullsegment.split('/').at(1)}table`;
     var centerColumn = [0, 3, 4];
     var wrapColumn = [1, 4, 5, 6, 7];
     var dateInput = ["tanggal spp"];
@@ -48,7 +48,7 @@ var initData = (function () {
                         let title = column.header().textContent;
                         let reference = document.querySelector(`#${tablename} thead tr`);
                         let thead = document.querySelector(`#${tablename} thead`);
-                        let titleArray = ["grup barang", "jenis barang", "opsi", "status"];
+                        let titleArray = ["option"];
 
                         // Create input element
                         $(column.header()).addClass('align-middle')
@@ -112,7 +112,7 @@ var initData = (function () {
                                 e.preventDefault();
                                 column.search(input.value).draw();
                             });
-                        } else if (title.toLowerCase() !== "opsi") {
+                        } else {
                             let labelName = title
                                 .toLowerCase()
                                 .split(" ")
@@ -191,6 +191,11 @@ var initData = (function () {
                                 }
                             }
 
+                            if (title.toLowerCase() == "option") {
+                                // console.log(selectValue);
+                                $(selectValue).addClass('pe-none d-none');
+                            }
+                            
                             this.th.appendChild(selectValue);
                             tr.appendChild(this.th);
 
@@ -206,28 +211,33 @@ var initData = (function () {
             },
             ajax: {
                 // "url": "http://192.168.4.152/erp/erp/setup/master/itemtype/fetchData",
-                url: `${baseurl}/${segment}/fetchdata`,
+                url: `${baseurl}/${fullsegment}/fetchdata`,
                 type: "POST",
                 data: function (d) {
                     d._token = document.querySelector('meta[name="csrf-token"]').content,
                         d.data = params;
                 },
                 dataSrc: function (json) {
-                    //   window.permission = json.permission;
+                    window.permission = null;
+
+                    if (json.permission.length > 0) {
+                        window.permission = json.permission[0];
+                    }
+
                     window.data = json;
                     window.select = json.data;
 
-                    //   if (json.result) {
-                    //     window.productiontype = json.result.productiontype
-                    //       ? json.result.productiontype
-                    //       : null;
-                    //   }
+                    if (json.result) {
+                        window.productiontype = json.result.productiontype
+                            ? json.result.productiontype
+                            : null;
+                    }
 
                     if (json.draw > 1) {
                         document.querySelector('meta[name="csrf-token"]').content =
                             json.token;
                         let inputToken = document.querySelectorAll(
-                            'input[name*="csrf_test_name"]'
+                            'input[name*="_token"]'
                         );
                         Array.from(inputToken).map((item) => {
                             item.value = json.token;
@@ -239,10 +249,10 @@ var initData = (function () {
             },
             columns: [
                 { data: null },
-                { data: "kar_id" },
-                { data: "nama" },
-                { data: "machine" },
                 { data: "cloud_id" },
+                { data: "msn_type" },
+                { data: "msn_name" },
+                { data: null }
             ],
             columnDefs: [
                 {
@@ -257,27 +267,66 @@ var initData = (function () {
                     }
                 },
                 {
-                    targets: [-2],
+                    target: 0,
+                    className: "text-center px-6",
                     render: function (data, type, row, meta) {
-                        let span = '';
-                        data.forEach(e => {
-                            span = `${span} <span class="badge badge-info">${e}</span><br>`
-                        });
+                        if (fullsegment.split("/").at(-1) == "select") {
+                            let checked = "";
+                            if (window.selectedData) {
+                                checked = window.selectedData.includes(row.sjd_id)
+                                    ? "checked"
+                                    : "";
+                            }
 
-                        return span;
-                    }
+                            return `<div class="form-check form-check-sm form-check-custom form-check-solid">
+                                                <input class="form-check-input" onchange="updateChecked(this)" type="checkbox" value="${row.sjd_id}" ${checked}>
+                                            </div>`;
+                        } else {
+                            return `<p class='m-0'>${meta.row + 1}</p>`;
+                        }
+                    },
                 },
                 {
-                    targets: [-1],
-                    class: 'text-center px-6',
+                    targets: -1,
                     render: function (data, type, row, meta) {
-                        let span = '';
-                        data.forEach(e => {
-                            span = `${span} <span class="badge badge-info">${e}</span><br>`
-                        });
+                        let actionValue = `<button type="button" class="btn btn-sm btn-primary"
+                        data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-start">
+                        Option
+                        </button>`;
 
-                        return span;
-                    }
+                        let menuValue = false;
+
+                        if (!menuValue) {
+                            actionValue = `${actionValue} <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-200px py-4"
+                            data-kt-menu="true">`;
+                            menuValue = true;
+                        }
+
+                        if (window.permission.can_edit) {
+                            actionValue = `${actionValue} <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3">
+                                    Edit
+                                </a>
+                            </div>`
+                        }
+
+                        if (window.permission.can_delete) {
+                            actionValue = `${actionValue} <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3">
+                                    Delete
+                                </a>
+                            </div>`
+                        }
+                        actionValue = `${actionValue} </div>`;
+
+                        return actionValue;
+                    },
+                },
+                {
+                    targets: centerColumn,
+                    orderable: false,
+                    className: "text-center px-6"
                 }
             ],
             createdRow: function (row, data, dataIndex) {
@@ -345,7 +394,7 @@ var initData = (function () {
 
     return {
         init: function (params, action = null) {
-            initToggleToolbar();
+            // initToggleToolbar();
             tables(params, action);
         },
     };

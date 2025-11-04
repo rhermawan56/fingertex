@@ -60,7 +60,7 @@
                         <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
                             data-bs-placement="right">
                             <span class="menu-icon me-0">
-                                <i class="bi bi-file-earmark-lock fs-2"></i>
+                                <i class="{{$m->icon}}"></i>
                             </span>
                             <span class="menu-title">{{ $m->menu_name }}</span>
                         </span>
@@ -81,92 +81,6 @@
                         </div>
                     </div>
                 @endforeach
-            </div>
-            <div class="menu menu-column menu-title-gray-700 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500 fw-bold"
-                id="#kt_aside_menu" data-kt-menu="true">
-                <!-- Sidebar menu content START -->
-                <div class="menu-item py-2">
-                    <a class="menu-link menu-center" href="../../demo6/dist/index.html" data-bs-trigger="hover"
-                        data-bs-dismiss="click" data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-house fs-2"></i>
-                        </span>
-                        <span class="menu-title">Home</span>
-                    </a>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-file-earmark-lock fs-2"></i>
-                        </span>
-                        <span class="menu-title">Auth</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for Auth here... -->
-                    </div>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-shield-check fs-2"></i>
-                        </span>
-                        <span class="menu-title">Account</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for Account here... -->
-                    </div>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-chat-square-text fs-2"></i>
-                        </span>
-                        <span class="menu-title">Chat</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for Chat here... -->
-                    </div>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-people fs-2"></i>
-                        </span>
-                        <span class="menu-title">Users</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for Users here... -->
-                    </div>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-file-text fs-2"></i>
-                        </span>
-                        <span class="menu-title">General</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for General here... -->
-                    </div>
-                </div>
-                <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                    <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                        data-bs-placement="right">
-                        <span class="menu-icon me-0">
-                            <i class="bi bi-gear fs-2"></i>
-                        </span>
-                        <span class="menu-title">More</span>
-                    </span>
-                    <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                        <!-- ...copy all submenu items for More here... -->
-                    </div>
-                </div>
-                <!-- Sidebar menu content END -->
             </div>
             <!--end::Menu-->
         </div>

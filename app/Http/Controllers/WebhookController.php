@@ -125,8 +125,8 @@ class WebhookController extends BaseController
         if ($status->getOriginalContent() == 'OK') {
             if ($data->type == 'attlog') {
                 $dataLogin = [
-                    'username' => env('API_USERNAME'),
-                    'password' => env('API_PASSWORD')
+                    'username' => 'aqew',
+                    'password' => 'aqew123'
                 ];
 
                 try {
@@ -154,22 +154,24 @@ class WebhookController extends BaseController
 
                     $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
 
-                    if ($check == 0) {
-                        $dataInsert = [
-                            'tgl_absen' => explode(' ', $data->data->scan)[0],
-                            'jam' => explode(' ', $data->data->scan)[1],
-                            'status' => $this->desc[$data->data->status_scan],
-                            'karyawan_id' => $responseData['kar_id'],
-                            'karyawan_name' => $responseData['nama'],
-                            'cloud_id' => $data->cloud_id,
-                            'company' => 'PT. KAHAPTEX',
-                            'create_date' => date('Y-m-d H:i:s'),
-                            'validation' => '1',
-                            'verification_method' => $this->verify[$data->data->verify]
-                        ];
+                    $dataInsert = [
+                        'tgl_absen' => explode(' ', $data->data->scan)[0],
+                        'jam' => explode(' ', $data->data->scan)[1],
+                        'status' => $this->desc[$data->data->status_scan],
+                        'karyawan_id' => $responseData['kar_id'],
+                        'karyawan_name' => $responseData['nama'],
+                        'cloud_id' => $data->cloud_id,
+                        'company' => 'PT. KAHAPTEX',
+                        'create_date' => date('Y-m-d H:i:s'),
+                        'validation' => '1',
+                        'verification_method' => $this->verify[$data->data->verify]
+                    ];
 
+                    if ($check == 0) {
                         Attendance::insert($dataInsert);
-                        $responseInsert = Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
+                        Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
+                    } else {
+                        Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                     }
 
                     return response()->json([
