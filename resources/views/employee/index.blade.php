@@ -9,8 +9,7 @@
             <div class="card-title"></div>
             <div class="card-toolbar">
                 <div class="d-flex justify-content-end" data-kt-customer-table-toolbar="base">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_customer">Add {{ucwords(request()->segment(1))}}</button>
+                    <a href="#" type="button" class="btn btn-primary pe-none d-none">Add {{ucwords(request()->segment(1))}}</a>
                 </div>
                 <div class="d-flex justify-content-end align-items-center d-none"
                     data-kt-customer-table-toolbar="selected">
@@ -33,10 +32,11 @@
                             </div>
                         </th> --}}
                         <th>#</th>
-                        <th>id karyawan</th>
-                        <th>nama</th>
-                        <th>mesin</th>
-                        <th>kode mesin</th>
+                        <th>Employee Id</th>
+                        <th>Name</th>
+                        <th>Machine</th>
+                        <th>Machine Code</th>
+                        <th>Option</th>
                     </tr>
                 </thead>
                 <tbody class="fw-bold text-gray-600">

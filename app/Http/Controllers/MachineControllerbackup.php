@@ -11,10 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
 
-class MachineController extends Controller
+class MachineControllerbackup extends Controller
 {
     private $roleId, $role, $submenu, $routes;
-
     /**
      * Display a listing of the resource.
      *
@@ -94,19 +93,19 @@ class MachineController extends Controller
                 ->with('success', 'The machine data has been successfully saved!');
         } catch (\Exception $e) {
             DB::rollback();
-            // dd($e->getMessage());
-            return redirect()->route('machine.index')
-                ->with('error', $e->getMessage());
+            dd($e->getMessage());
+            // return redirect()->route('machine.index')
+            //     ->with('error', 'The machine data could not be saved!');
         }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Machine  $machine
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Machine $machine)
     {
         //
     }
@@ -114,7 +113,7 @@ class MachineController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Machine  $machine
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -131,53 +130,21 @@ class MachineController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Models\Machine  $machine
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        $rules = [
-            'company' => 'required',
-            'msn_type' => 'required',
-            'cloud_id' => 'required',
-            'msn_name' => 'required'
-        ];
-
-        $messages = [
-            'company.required' => 'This field is required!',
-            'msn_type.required' => 'This field is required!',
-            'cloud_id.required' => 'This field is required!',
-            'msn_name.required' => 'This field is required!',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        DB::beginTransaction();
-        try {
-            Machine::find($id)->update($request->all());
-            DB::commit();
-            return redirect()->route('machine.index')
-                ->with('success', 'Machine data successfully updated!');
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->route('machine.index')
-                ->with('error', 'Machine data failed to update!');
-        }
+        dd($id);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Models\Machine  $machine
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Machine $machine)
     {
         //
     }
@@ -191,18 +158,16 @@ class MachineController extends Controller
         })->values();
 
         $data = Machine::fetchdata($request);
-        $result = [];
 
-        foreach ($data['data']->toArray() as $k => &$v) {
-            $v['msn_id'] = encrypt($v['msn_id']);
-            array_push($result, $v);
+        foreach ($data['data'] as $k => &$v) {
+            $v->msn_id = encrypt($v->msn_id);
         }
 
         return response()->json([
             'draw' => $request['draw'],
             'recordsTotal' => $data['rows'],
             'recordsFiltered' => $data['rows'],
-            'data' => $result,
+            'data' => $data['data'],
             'token' => csrf_token(),
             'permission' => $roleaccess,
             // 'request' => $roleaccess

@@ -31,6 +31,39 @@
 <script src="{{ asset('metronic/assets/plugins/global/plugins.bundle.js') }}"></script>
 <script src="{{ asset('metronic/assets/js/scripts.bundle.js') }}"></script>
 <script src="{{ asset('metronic/assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+<script src="{{ asset('js/iziToast.min.js') }}"></script>
 {{-- <script src="{{ mix("js/{$js}.js") }}"></script> --}}
-<script src="{{ asset('js/'.$js.'.js') }}"></script>
+<script src="{{ asset('js/' . $js . '.js') }}"></script>
 <!--end::Javascript-->
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+</script>
+
+@if (session('success'))
+    <script>
+        toastr.info("{{ session('success') }}");
+    </script>
+@endif
+
+@if (session('error'))
+    <script>
+        toastr.error("{{ session('error') }}");
+    </script>
+@endif

@@ -26,8 +26,9 @@ var dataPopUp;
 var initData = (function () {
     var tr = document.createElement("tr");
     var tablename = `${segment}table`;
-    var centerColumn = [0, 3, 4];
-    var wrapColumn = [1, 4, 5, 6, 7];
+    var centerColumn = [0, 3, 4, 5];
+    var falseorder = [0, 4];
+    var wrapColumn = [];
     var dateInput = ["tanggal spp"];
     // console.log(`${baseurl}/${segment}/fetchData`);
 
@@ -48,7 +49,7 @@ var initData = (function () {
                         let title = column.header().textContent;
                         let reference = document.querySelector(`#${tablename} thead tr`);
                         let thead = document.querySelector(`#${tablename} thead`);
-                        let titleArray = ["grup barang", "jenis barang", "opsi", "status"];
+                        let titleArray = ["option"];
 
                         // Create input element
                         $(column.header()).addClass('align-middle')
@@ -112,7 +113,7 @@ var initData = (function () {
                                 e.preventDefault();
                                 column.search(input.value).draw();
                             });
-                        } else if (title.toLowerCase() !== "opsi") {
+                        } else {
                             let labelName = title
                                 .toLowerCase()
                                 .split(" ")
@@ -191,6 +192,11 @@ var initData = (function () {
                                 }
                             }
 
+                            if (title.toLowerCase() == "option") {
+                                // console.log(selectValue);
+                                $(selectValue).addClass('pe-none d-none');
+                            }
+
                             this.th.appendChild(selectValue);
                             tr.appendChild(this.th);
 
@@ -206,28 +212,22 @@ var initData = (function () {
             },
             ajax: {
                 // "url": "http://192.168.4.152/erp/erp/setup/master/itemtype/fetchData",
-                url: `${baseurl}/${segment}/fetchdata`,
+                url: `${baseurl}/${fullsegment}/fetchdata`,
                 type: "POST",
                 data: function (d) {
                     d._token = document.querySelector('meta[name="csrf-token"]').content,
                         d.data = params;
                 },
                 dataSrc: function (json) {
-                    //   window.permission = json.permission;
+                    window.permission = json.permission[0];
                     window.data = json;
                     window.select = json.data;
-
-                    //   if (json.result) {
-                    //     window.productiontype = json.result.productiontype
-                    //       ? json.result.productiontype
-                    //       : null;
-                    //   }
 
                     if (json.draw > 1) {
                         document.querySelector('meta[name="csrf-token"]').content =
                             json.token;
                         let inputToken = document.querySelectorAll(
-                            'input[name*="csrf_test_name"]'
+                            'input[name*="_token"]'
                         );
                         Array.from(inputToken).map((item) => {
                             item.value = json.token;
@@ -243,21 +243,22 @@ var initData = (function () {
                 { data: "nama" },
                 { data: "machine" },
                 { data: "cloud_id" },
+                { data: null },
             ],
             columnDefs: [
                 {
                     targets: "_all",
-                    class: "align-middle",
+                    class: "align-middle text-nowrap",
                 },
                 {
                     targets: 0,
                     orderable: false,
                     render: function (data, type, row, meta) {
-                        return meta.row + 1;
+                        return (meta.row + 1) + parseInt(window.data.start);
                     }
                 },
                 {
-                    targets: [-2],
+                    targets: [-3],
                     render: function (data, type, row, meta) {
                         let span = '';
                         data.forEach(e => {
@@ -268,7 +269,7 @@ var initData = (function () {
                     }
                 },
                 {
-                    targets: [-1],
+                    targets: [-2],
                     class: 'text-center px-6',
                     render: function (data, type, row, meta) {
                         let span = '';
@@ -278,12 +279,56 @@ var initData = (function () {
 
                         return span;
                     }
+                },
+                {
+                    targets: -1,
+                    render: function (data, type, row, meta) {
+                        let actionValue = `<button type="button" class="btn btn-sm btn-primary"
+                        data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-start">
+                        Option
+                        </button>`;
+
+
+                        if (window.permission) {
+                            console.log(window.permission);
+                            let menuValue = false;
+
+                            if (!menuValue) {
+                                actionValue = `${actionValue} <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-200px py-4"
+                                data-kt-menu="true">`;
+                                menuValue = true;
+                            }
+
+                            if (window.permission.can_edit) {
+                                actionValue = `${actionValue} <div class="menu-item px-3">
+                                    <a href="${baseurl}/${fullsegment}/${row.kar_id}/edit" class="menu-link px-3">
+                                        Edit
+                                    </a>
+                                </div>`
+                            }
+
+                            if (window.permission.can_delete) {
+                                actionValue = `${actionValue} <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3">
+                                        Delete
+                                    </a>
+                                </div>`
+                            }
+                            actionValue = `${actionValue} </div>`;
+                        }
+
+                        return actionValue;
+                    },
+                },
+                {
+                    targets: falseorder,
+                    orderable: false
                 }
             ],
             createdRow: function (row, data, dataIndex) {
-                centerColumn.forEach(e => {
-                    $(`td:eq(${e})`, row).addClass('text-center px-6');
-                });
+                centerColumn.map(e => $(`td:eq(${e})`, row).addClass('text-center px-6'));
+                wrapColumn.map(e => $(`td:eq(${e})`, row).removeClass('text-nowrap'));
             }
         });
 
@@ -351,6 +396,23 @@ var initData = (function () {
     };
 })();
 
+function alerts2(params) {
+    Swal.fire({
+        title: "Confirmation",
+        text: "Are you sure you want to continue this process?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let form = $(params).closest('form');
+            $(form).submit();
+        }
+    });
+}
+
 $(document).ready(function () {
-    initData.init();
+    if (fullsegment.split('/').at(-1) == 'employee') {
+        initData.init();
+    }
 });

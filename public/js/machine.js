@@ -27,7 +27,8 @@ var initData = (function () {
     var tr = document.createElement("tr");
     var tablename = `${fullsegment.split('/').at(1)}table`;
     var centerColumn = [0, 3, 4];
-    var wrapColumn = [1, 4, 5, 6, 7];
+    var falseorder = [0, 4];
+    var wrapColumn = [];
     var dateInput = ["tanggal spp"];
     // console.log(`${baseurl}/${segment}/fetchData`);
 
@@ -195,7 +196,7 @@ var initData = (function () {
                                 // console.log(selectValue);
                                 $(selectValue).addClass('pe-none d-none');
                             }
-                            
+
                             this.th.appendChild(selectValue);
                             tr.appendChild(this.th);
 
@@ -257,7 +258,7 @@ var initData = (function () {
             columnDefs: [
                 {
                     targets: "_all",
-                    class: "align-middle",
+                    class: "align-middle text-nowrap",
                 },
                 {
                     targets: 0,
@@ -295,44 +296,44 @@ var initData = (function () {
                         Option
                         </button>`;
 
-                        let menuValue = false;
+                        if (window.permission) {
+                            let menuValue = false;
 
-                        if (!menuValue) {
-                            actionValue = `${actionValue} <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-200px py-4"
+                            if (!menuValue) {
+                                actionValue = `${actionValue} <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-200px py-4"
                             data-kt-menu="true">`;
-                            menuValue = true;
-                        }
+                                menuValue = true;
+                            }
 
-                        if (window.permission.can_edit) {
-                            actionValue = `${actionValue} <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3">
+                            if (window.permission.can_edit) {
+                                actionValue = `${actionValue} <div class="menu-item px-3">
+                                <a href="${baseurl}/absensi/mesinfinger/${row.msn_id}/edit" class="menu-link px-3">
                                     Edit
                                 </a>
                             </div>`
-                        }
+                            }
 
-                        if (window.permission.can_delete) {
-                            actionValue = `${actionValue} <div class="menu-item px-3">
+                            if (window.permission.can_delete) {
+                                actionValue = `${actionValue} <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3">
                                     Delete
                                 </a>
                             </div>`
+                            }
+                            actionValue = `${actionValue} </div>`;
                         }
-                        actionValue = `${actionValue} </div>`;
 
                         return actionValue;
                     },
                 },
                 {
-                    targets: centerColumn,
-                    orderable: false,
-                    className: "text-center px-6"
+                    targets: falseorder,
+                    orderable: false
                 }
             ],
             createdRow: function (row, data, dataIndex) {
-                centerColumn.forEach(e => {
-                    $(`td:eq(${e})`, row).addClass('text-center px-6');
-                });
+                centerColumn.map(e => $(`td:eq(${e})`, row).addClass('text-center px-6'));
+                wrapColumn.map(e => $(`td:eq(${e})`, row).removeClass('text-nowrap'));
             }
         });
 
@@ -399,6 +400,21 @@ var initData = (function () {
         },
     };
 })();
+
+function alerts2(params) {
+    Swal.fire({
+        title: "Confirmation",
+        text: "Are you sure you want to continue this process?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let form = $(params).closest('form');
+            $(form).submit();
+        }
+    });
+}
 
 $(document).ready(function () {
     initData.init();

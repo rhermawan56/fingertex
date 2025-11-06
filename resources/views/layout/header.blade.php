@@ -27,6 +27,8 @@
     <!--begin::Global Stylesheets Bundle(used by all pages)-->
     <link href="{{ asset('metronic/assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('metronic/assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/iziToast.min.css') }}" rel="stylesheet" type="text/css" />
 </head>
 <script>
 function filterSidebarMenu(query) {

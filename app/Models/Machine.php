@@ -11,7 +11,8 @@ class Machine extends Model
 {
     use HasFactory;
     protected $table = 'ms_mesin';
-    protected $guarded = ['id'];
+    protected $primaryKey = 'msn_id';
+    protected $guarded = ['msn_id'];
     const CREATED_AT = 'msn_creation';
     public $timestamps = true;
     const UPDATED_AT = null;

@@ -1,24 +1,34 @@
 @php
-use App\Models\Role;
-use App\Models\Menu;
+    use App\Models\Role;
+    use App\Models\Menu;
 
-$roleId = Auth::user()->role_id;
-$role = Role::where('id', $roleId)->first();
-$menuId = $role->role_access
-    ->filter(function ($item) {
-        return $item['menu_id'];
-    })
-    ->pluck('menu_id')
-    ->values();
+    $roleId = Auth::user()->role_id;
+    $role = Role::where('id', $roleId)->first();
+    $menuId = $role->role_access
+        ->filter(function ($item) {
+            return $item['menu_id'];
+        })
+        ->pluck('menu_id')
+        ->values();
 
-$submenuId = $role->role_access
-    ->filter(function ($item) {
-        return $item['submenu_id'];
-    })
-    ->pluck('submenu_id')
-    ->values();
+    $submenuId = $role->role_access
+        ->filter(function ($item) {
+            return $item['submenu_id'];
+        })
+        ->pluck('submenu_id')
+        ->values();
 
-$menu = Menu::whereIn('id', $menuId)->get();
+    $menu = Menu::whereIn('id', $menuId)->get();
+    $segmentsfn = function () {
+        $seg = request()->segments();
+        if (end($seg) == 'edit') {
+            $seg = collect($seg)->reverse()->values()->forget(1);
+            $seg = $seg->reverse()->values()->toArray();
+        }
+        return $seg;
+    };
+
+    $segments = $segmentsfn();
 
 @endphp
 
@@ -64,11 +74,11 @@ $menu = Menu::whereIn('id', $menuId)->get();
                     <!--begin::Menu-->
                     <div class="menu menu-lg-rounded menu-column menu-lg-row menu-state-bg menu-title-gray-700 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-400 fw-bold my-5 my-lg-0 align-items-stretch"
                         id="#kt_header_menu" data-kt-menu="true">
-                          @foreach ($menu as $m)
+                        @foreach ($menu as $m)
                             <div data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start"
                                 class="menu-item menu-lg-down-accordion me-lg-1">
                                 <a class="menu-link py-3" href="">
-                                    <span class="menu-title">{{ $m->menu_name}}</span>
+                                    <span class="menu-title">{{ $m->menu_name }}</span>
                                     <span class="menu-arrow d-lg-none"></span>
                                 </a>
                                 <div
@@ -76,11 +86,11 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                     <div class="menu-item">
                                         @if ($m->submenu)
                                             @foreach ($m->submenu as $s)
-                                                <a class="menu-link py-3" href="{{$s->url}}">
+                                                <a class="menu-link py-3" href="{{ $s->url }}">
                                                     <span class="menu-icon">
                                                         <i class="bi bi-archive fs-3"></i>
                                                     </span>
-                                                    <span class="menu-title">{{$s->submenu_name}}</span>
+                                                    <span class="menu-title">{{ $s->submenu_name }}</span>
                                                 </a>
                                             @endforeach
                                         @endif
@@ -88,8 +98,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
 
                                 </div>
                             </div>
-                         @endforeach
-                        
+                        @endforeach
+
                     </div>
                     <!--end::Menu-->
                 </div>
@@ -107,10 +117,9 @@ $menu = Menu::whereIn('id', $menuId)->get();
                     <!--end::Clock-->
                     <!--begin::Search-->
                     <div class="d-flex align-items-stretch ms-1 ms-lg-3">
-                        <div id="kt_header_search" class="d-flex align-items-stretch"
-                            data-kt-search-keypress="true" data-kt-search-min-length="2"
-                            data-kt-search-enter="enter" data-kt-search-layout="menu" data-kt-menu-trigger="auto"
-                            data-kt-menu-overflow="false" data-kt-menu-permanent="true"
+                        <div id="kt_header_search" class="d-flex align-items-stretch" data-kt-search-keypress="true"
+                            data-kt-search-min-length="2" data-kt-search-enter="enter" data-kt-search-layout="menu"
+                            data-kt-menu-trigger="auto" data-kt-menu-overflow="false" data-kt-menu-permanent="true"
                             data-kt-menu-placement="bottom-end">
                             <!--begin::Search toggle-->
                             <div class="d-flex align-items-center" data-kt-search-element="toggle"
@@ -135,8 +144,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none">
                                                 <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
-                                                    height="2" rx="1"
-                                                    transform="rotate(45 17.0365 15.1223)" fill="black" />
+                                                    height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
+                                                    fill="black" />
                                                 <path
                                                     d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
                                                     fill="black" />
@@ -145,7 +154,9 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                         <!--end::Svg Icon-->
                                         <!--end::Icon-->
                                         <!--begin::Input-->
-                                        <input type="text" class="form-control form-control-flush ps-10" name="search" value="" placeholder="Cari menu sidebar..." data-kt-search-element="input" onkeyup="filterSidebarMenu(this.value)" />
+                                        <input type="text" class="form-control form-control-flush ps-10"
+                                            name="search" value="" placeholder="Cari menu sidebar..."
+                                            data-kt-search-element="input" onkeyup="filterSidebarMenu(this.value)" />
                                         <!--end::Input-->
                                         <!--begin::Spinner-->
                                         <span
@@ -161,8 +172,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                             data-kt-search-element="clear">
                                             <!--begin::Svg Icon | path: icons/duotune/arrows/arr061.svg-->
                                             <span class="svg-icon svg-icon-2 svg-icon-lg-1 me-0">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                    height="24" viewBox="0 0 24 24" fill="none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none">
                                                     <rect opacity="0.5" x="6" y="17.3137" width="16"
                                                         height="2" rx="1"
                                                         transform="rotate(-45 6 17.3137)" fill="black" />
@@ -457,8 +468,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                                 <rect x="8" y="9" width="3" height="10"
                                                                     rx="1.5" fill="black" />
                                                                 <rect opacity="0.5" x="13" y="5" width="3"
-                                                                    height="14" rx="1.5"
-                                                                    fill="black" />
+                                                                    height="14" rx="1.5" fill="black" />
                                                                 <rect x="18" y="11" width="3" height="8"
                                                                     rx="1.5" fill="black" />
                                                                 <rect x="3" y="13" width="3" height="6"
@@ -544,7 +554,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                     </div>
                                     <!--end::Recently viewed-->
                                     <!--begin::Recently viewed-->
-                            
+
                                     <!--end::Recently viewed-->
                                     <!--begin::Empty-->
                                     <div data-kt-search-element="empty" class="text-center d-none">
@@ -552,8 +562,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                         <div class="pt-10 pb-10">
                                             <!--begin::Svg Icon | path: icons/duotune/files/fil024.svg-->
                                             <span class="svg-icon svg-icon-4x opacity-50">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                    height="24" viewBox="0 0 24 24" fill="none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none">
                                                     <path opacity="0.3"
                                                         d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z"
                                                         fill="black" />
@@ -587,8 +597,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                     <!--end::Heading-->
                                     <!--begin::Input group-->
                                     <div class="mb-5">
-                                        <input type="text"
-                                            class="form-control form-control-sm form-control-solid"
+                                        <input type="text" class="form-control form-control-sm form-control-solid"
                                             placeholder="Contains the word" name="query" />
                                     </div>
                                     <!--end::Input group-->
@@ -673,8 +682,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                     <!--end::Input group-->
                                     <!--begin::Input group-->
                                     <div class="mb-5">
-                                        <select name="timezone" aria-label="Select a Timezone"
-                                            data-control="select2" data-placeholder="date_period"
+                                        <select name="timezone" aria-label="Select a Timezone" data-control="select2"
+                                            data-placeholder="date_period"
                                             class="form-select form-select-sm form-select-solid">
                                             <option value="next">Within the next</option>
                                             <option value="last">Within the last</option>
@@ -1045,8 +1054,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24"
                                                                 height="24" viewBox="0 0 24 24" fill="none">
                                                                 <rect opacity="0.3" x="2" y="2" width="20"
-                                                                    height="20" rx="10"
-                                                                    fill="black" />
+                                                                    height="20" rx="10" fill="black" />
                                                                 <rect x="11" y="14" width="7" height="2"
                                                                     rx="1" transform="rotate(-90 11 14)"
                                                                     fill="black" />
@@ -1278,11 +1286,11 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                             class="btn btn-color-gray-600 btn-active-color-primary">View All
                                             <!--begin::Svg Icon | path: icons/duotune/arrows/arr064.svg-->
                                             <span class="svg-icon svg-icon-5">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                    height="24" viewBox="0 0 24 24" fill="none">
-                                                    <rect opacity="0.5" x="18" y="13" width="13"
-                                                        height="2" rx="1"
-                                                        transform="rotate(-180 18 13)" fill="black" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none">
+                                                    <rect opacity="0.5" x="18" y="13" width="13" height="2"
+                                                        rx="1" transform="rotate(-180 18 13)"
+                                                        fill="black" />
                                                     <path
                                                         d="M15.4343 12.5657L11.25 16.75C10.8358 17.1642 10.8358 17.8358 11.25 18.25C11.6642 18.6642 12.3358 18.6642 12.75 18.25L18.2929 12.7071C18.6834 12.3166 18.6834 11.6834 18.2929 11.2929L12.75 5.75C12.3358 5.33579 11.6642 5.33579 11.25 5.75C10.8358 6.16421 10.8358 6.83579 11.25 7.25L15.4343 11.4343C15.7467 11.7467 15.7467 12.2533 15.4343 12.5657Z"
                                                         fill="black" />
@@ -1338,8 +1346,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                 <span class="w-70px badge badge-light-success me-4">200 OK</span>
                                                 <!--end::Code-->
                                                 <!--begin::Title-->
-                                                <a href="#"
-                                                    class="text-gray-800 text-hover-primary fw-bold">New order</a>
+                                                <a href="#" class="text-gray-800 text-hover-primary fw-bold">New
+                                                    order</a>
                                                 <!--end::Title-->
                                             </div>
                                             <!--end::Section-->
@@ -1356,8 +1364,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                 <span class="w-70px badge badge-light-danger me-4">500 ERR</span>
                                                 <!--end::Code-->
                                                 <!--begin::Title-->
-                                                <a href="#"
-                                                    class="text-gray-800 text-hover-primary fw-bold">New customer</a>
+                                                <a href="#" class="text-gray-800 text-hover-primary fw-bold">New
+                                                    customer</a>
                                                 <!--end::Title-->
                                             </div>
                                             <!--end::Section-->
@@ -1411,8 +1419,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                 <span class="w-70px badge badge-light-success me-4">200 OK</span>
                                                 <!--end::Code-->
                                                 <!--begin::Title-->
-                                                <a href="#"
-                                                    class="text-gray-800 text-hover-primary fw-bold">API
+                                                <a href="#" class="text-gray-800 text-hover-primary fw-bold">API
                                                     connection</a>
                                                 <!--end::Title-->
                                             </div>
@@ -1486,8 +1493,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                                 <span class="w-70px badge badge-light-warning me-4">300 WRN</span>
                                                 <!--end::Code-->
                                                 <!--begin::Title-->
-                                                <a href="#"
-                                                    class="text-gray-800 text-hover-primary fw-bold">API rollback</a>
+                                                <a href="#" class="text-gray-800 text-hover-primary fw-bold">API
+                                                    rollback</a>
                                                 <!--end::Title-->
                                             </div>
                                             <!--end::Section-->
@@ -1560,11 +1567,11 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                             class="btn btn-color-gray-600 btn-active-color-primary">View All
                                             <!--begin::Svg Icon | path: icons/duotune/arrows/arr064.svg-->
                                             <span class="svg-icon svg-icon-5">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                    height="24" viewBox="0 0 24 24" fill="none">
-                                                    <rect opacity="0.5" x="18" y="13" width="13"
-                                                        height="2" rx="1"
-                                                        transform="rotate(-180 18 13)" fill="black" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none">
+                                                    <rect opacity="0.5" x="18" y="13" width="13" height="2"
+                                                        rx="1" transform="rotate(-180 18 13)"
+                                                        fill="black" />
                                                     <path
                                                         d="M15.4343 12.5657L11.25 16.75C10.8358 17.1642 10.8358 17.8358 11.25 18.25C11.6642 18.6642 12.3358 18.6642 12.75 18.25L18.2929 12.7071C18.6834 12.3166 18.6834 11.6834 18.2929 11.2929L12.75 5.75C12.3358 5.33579 11.6642 5.33579 11.25 5.75C10.8358 6.16421 10.8358 6.83579 11.25 7.25L15.4343 11.4343C15.7467 11.7467 15.7467 12.2533 15.4343 12.5657Z"
                                                         fill="black" />
@@ -1587,7 +1594,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                         <!--begin::Menu wrapper-->
                         <div class="cursor-pointer symbol symbol-30px symbol-md-40px" data-kt-menu-trigger="click"
                             data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-                            <img src="{{asset('metronic/assets/media/avatars/150-26.jpg')}}" alt="image" />
+                            <img src="{{ asset('metronic/assets/media/avatars/150-26.jpg') }}" alt="image" />
                         </div>
                         <!--begin::Menu-->
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
@@ -1597,7 +1604,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                                 <div class="menu-content d-flex align-items-center px-3">
                                     <!--begin::Avatar-->
                                     <div class="symbol symbol-50px me-5">
-                                        <img alt="Logo" src="{{asset('metronic/assets/media/avatars/150-26.jpg')}}" />
+                                        <img alt="Logo"
+                                            src="{{ asset('metronic/assets/media/avatars/150-26.jpg') }}" />
                                     </div>
                                     <!--end::Avatar-->
                                     <!--begin::Username-->
@@ -1836,7 +1844,8 @@ $menu = Menu::whereIn('id', $menuId)->get();
                 data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                 class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
                 <!--begin::Title-->
-                <h1 class="d-flex align-items-center text-dark fw-bolder my-1 fs-3">{{ ucwords(request()->segment(1)) }}</h1>
+                <h1 class="d-flex align-items-center text-dark fw-bolder my-1 fs-3">
+                    {{ ucwords(request()->segment(1)) }}</h1>
                 <!--end::Title-->
                 <!--begin::Separator-->
                 <span class="h-20px border-gray-200 border-start mx-3"></span>
@@ -1849,7 +1858,7 @@ $menu = Menu::whereIn('id', $menuId)->get();
                     </li>
                     <!--end::Item-->
 
-                    @foreach (request()->segments() as $item)
+                    @foreach ($segments as $item)
                         <li class="breadcrumb-item">
                             <span class="bullet bg-gray-200 w-5px h-2px"></span>
                         </li>
