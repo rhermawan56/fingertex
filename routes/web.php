@@ -29,8 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('employees/employee', EmployeeController::class)->except(['fetchdata','create'])->names('employee');
     Route::post('employees/employee/fetchdata', [EmployeeController::class, 'fetchdata'])->name('employee.fetchdata');
 
-    Route::resource('absensi/mesinfinger', MachineController::class)->except(['fetchdata'])->names('machine');
+    Route::resource('absensi/mesinfinger', MachineController::class)->except(['fetchdata', 'resettime', 'restartmachine'])->names('machine');
     Route::post('absensi/mesinfinger/fetchdata', [MachineController::class, 'fetchdata'])->name('machine.fetchdata');
+    Route::post('absensi/mesinfinger/resettime', [MachineController::class, 'resettime'])->name('machine.resettime');
+    Route::post('absensi/mesinfinger/restartmachine', [MachineController::class, 'restartmachine'])->name('machine.restartmachine');
 });
 
 Route::get('/test', function () {

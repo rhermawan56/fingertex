@@ -15,12 +15,12 @@ class Employee extends Model
     use HasFactory;
     protected $guarded = ['id'];
     private static $JWTTOKEN = '';
-    private static $loginUrl = "http://localhost/webhook_api/api/login";
-    private static $getAllPinUrl = "http://localhost/webhook_api/api/get_all_pin";
-    private static $getEmployeeUrl = "http://localhost/webhook_api/api/get_employees";
-    private static $getUser = "http://localhost/webhook_api/api/get_userinfo";
-    private static $setUser = "http://localhost/webhook_api/api/set_userinfo";
-    private static $deleteUser = "http://localhost/webhook_api/api/delete_userinfo";
+    private static $loginUrl = "http://103.76.15.27/webhook_api/api/login";
+    private static $getAllPinUrl = "http://103.76.15.27/webhook_api/api/get_all_pin";
+    private static $getEmployeeUrl = "http://103.76.15.27/webhook_api/api/get_employees";
+    private static $getUser = "http://103.76.15.27/webhook_api/api/get_userinfo";
+    private static $setUser = "http://103.76.15.27/webhook_api/api/set_userinfo";
+    private static $deleteUser = "http://103.76.15.27/webhook_api/api/delete_userinfo";
 
     public static function loginApi()
     {

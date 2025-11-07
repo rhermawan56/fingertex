@@ -208,4 +208,32 @@ class MachineController extends Controller
             // 'request' => $roleaccess
         ], 200);
     }
+
+    public function resettime(Request $request) {
+        $data = Machine::resettime($request)->getOriginalContent();
+
+        return response()->json([
+            // 'draw' => $request['draw'],
+            // 'recordsTotal' => $data['rows'],
+            // 'recordsFiltered' => $data['rows'],
+            'data' => $data['data'],
+            'token' => csrf_token(),
+            // 'permission' => $roleaccess,
+            // 'request' => $request->all()
+        ], 200);
+    }
+
+    public function restartmachine(Request $request) {
+        $data = Machine::restartmachine($request)->getOriginalContent();
+
+        return response()->json([
+            // 'draw' => $request['draw'],
+            // 'recordsTotal' => $data['rows'],
+            // 'recordsFiltered' => $data['rows'],
+            'data' => $data['data'],
+            'token' => csrf_token(),
+            // 'permission' => $roleaccess,
+            // 'request' => $request->all()
+        ], 200);
+    }
 }

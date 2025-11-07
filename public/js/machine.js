@@ -320,6 +320,13 @@ var initData = (function () {
                                 </a>
                             </div>`
                             }
+
+                            actionValue = `${actionValue} <div class="menu-item px-3">
+                                <a onclick="restartmachine(this)" data-cloudid="${row.cloud_id}" class="menu-link px-3">
+                                    Restart Machine
+                                </a>
+                            </div>`;
+
                             actionValue = `${actionValue} </div>`;
                         }
 
@@ -414,6 +421,108 @@ function alerts2(params) {
             $(form).submit();
         }
     });
+}
+
+function ajaxLoad(url, type, async, data) {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: url,
+      dataType: "JSON",
+      type: type,
+      async: async,
+      data: data,
+      success: function (data) {
+        if (type == "POST") {
+          document.querySelector('meta[name="csrf-token"]').content =
+            data.token;
+
+          let inputToken = document.querySelectorAll(
+            'input[name*="_token"]'
+          );
+          Array.from(inputToken).map((item) => {
+            item.value = data.token;
+          });
+        }
+
+        data.token ? (window.token = data.token) : (window.token = null);
+        window.data = data;
+        resolve(data.data);
+      },
+      error: function (xhr, exception) {
+        var msg = "";
+        if (xhr.status === 0) {
+          msg = "Not connect.\n Verify Network." + xhr.responseText;
+        } else if (xhr.status == 404) {
+          msg = "Requested page not found. [404]" + xhr.responseText;
+        } else if (xhr.status == 500) {
+          msg = "Internal Server Error [500]." + xhr.responseText;
+        } else if (exception === "parsererror") {
+          msg = "Requested JSON parse failed.";
+        } else if (exception === "timeout") {
+          msg = "Time out error." + xhr.responseText;
+        } else if (exception === "abort") {
+          msg = "Ajax request aborted.";
+        } else {
+          msg = "Error:" + xhr.status + " " + xhr.responseText;
+        }
+
+        reject(msg);
+      },
+    });
+  });
+}
+
+async function resetTime(params) {
+    let div = $(params).closest('div.card').find('div.table-block');
+    let table = $(div).find('table');
+    
+    $(div).addClass('overlay overlay-block');
+    $(table).addClass('overlay-wrapper');
+
+    $(div).append(
+        `<div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>`
+    );
+
+    let url = `${baseurl}/${fullsegment}/resettime`;
+    let response = await ajaxLoad(url, 'POST', true, {
+        _token: document.querySelector('meta[name="csrf-token"]').content,
+        action: 'resettime'
+    });
+
+    $(div).removeClass('overlay overlay-block');
+    $(table).removeClass('overlay-wrapper');
+    $(div).find('div.overlay-layer').remove();
+}
+
+async function restartmachine(params) {
+    let div = $(params).closest('div.card').find('div.table-block');
+    let table = $(div).find('table');
+
+    $(div).addClass('overlay overlay-block');
+    $(table).addClass('overlay-wrapper');
+
+    $(div).append(
+        `<div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>`
+    );
+
+    let url = `${baseurl}/${fullsegment}/restartmachine`;
+    let response = await ajaxLoad(url, 'POST', true, {
+        _token: document.querySelector('meta[name="csrf-token"]').content,
+        action: 'restartmachine',
+        cloud_id: params.dataset.cloudid
+    });
+
+    $(div).removeClass('overlay overlay-block');
+    $(table).removeClass('overlay-wrapper');
+    $(div).find('div.overlay-layer').remove();
 }
 
 $(document).ready(function () {
