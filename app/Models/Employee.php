@@ -318,10 +318,11 @@ class Employee extends Model
                 }
             }
 
-
             $userFileJsonUnique = collect($userFileJson)
                 ->filter(function ($item) use ($request) {
-                    return $item['data']['pin'] == $request->kar_id && $item['cloud_id'] == $request->machine[0];
+                    if (isset($item['data']['pin'])) {
+                        return $item['data']['pin'] == $request->kar_id && $item['cloud_id'] == $request->machine[0];
+                    }
                 })
                 ->keyBy('cloud_id')
                 ->values()
