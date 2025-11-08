@@ -427,7 +427,7 @@ var initData = (function () {
                     }
                 },
                 { data: "karyawan_name" },
-                { data: "cloud_id" },
+                { data: "msn_name" },
                 { data: "company" },
                 { data: "verification_method" },
                 { data: null }
