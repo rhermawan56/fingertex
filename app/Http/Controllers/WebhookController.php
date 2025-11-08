@@ -171,6 +171,13 @@ class WebhookController extends BaseController
                         Attendance::insert($dataInsert);
                         Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                     } else {
+                        Attendance::where([
+                            'karyawan_id' => $responseData['kar_id'],
+                            'tgl_absen' => explode(' ', $data->data->scan)[0],
+                            'status' => $this->desc[$data->data->status_scan]
+                        ])->update([
+                            'jam' => explode(' ', $data->data->scan)[1]
+                        ]);
                         Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                     }
 

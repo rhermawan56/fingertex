@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
+use App\Models\Employee;
+use App\Models\Machine;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 class DashboardController extends Controller
@@ -32,7 +36,21 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        $request = new Request();
+        $machine = Machine::all();
+        $employees = Employee::getDataEmployees($request, $machine)->getOriginalContent();
+        $attendaces = Attendance::where('tgl_absen', date('Y-m-d'))
+            ->select('absensi.*')
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('absensi')
+                    ->groupBy('karyawan_id');
+            })
+            ->get();
+
         $data = [
+            'employees' => (object) $employees,
+            'attendance' => $attendaces,
             'js' => 'dashboard'
         ];
         return view('dashboard', $data);

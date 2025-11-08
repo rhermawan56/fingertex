@@ -12,14 +12,7 @@
         ->pluck('menu_id')
         ->values();
 
-    $submenuId = $role->role_access
-        ->filter(function ($item) {
-            return $item['submenu_id'];
-        })
-        ->pluck('submenu_id')
-        ->values();
-
-    $menu = Menu::whereIn('id', $menuId)->get();
+    $menu = Menu::whereIn('id', $menuId)->where('is_active', '1')->get();
 
 @endphp
 <!--begin::Aside-->
@@ -47,39 +40,42 @@
                 id="#kt_aside_menu" data-kt-menu="true">
 
                 <div class="menu-item py-2">
-                    <a class="menu-link menu-center" href="../../demo6/dist/index.html" data-bs-trigger="hover"
+                    <a class="menu-link menu-center" href="{{route('dashboard')}}" data-bs-trigger="hover"
                         data-bs-dismiss="click" data-bs-placement="right">
                         <span class="menu-icon me-0">
                             <i class="bi bi-house fs-2"></i>
                         </span>
-                        <span class="menu-title">Home</span>
+                        <span class="menu-title">Dashboard</span>
                     </a>
                 </div>
+
                 @foreach ($menu as $m)
-                    <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
-                        <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
-                            data-bs-placement="right">
-                            <span class="menu-icon me-0">
-                                <i class="{{$m->icon}}"></i>
+
+                    @if ($m->submenu->count() > 0)
+                        <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
+                            <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
+                                data-bs-placement="right">
+                                <span class="menu-icon me-0">
+                                    <i class="{{ $m->icon }}"></i>
+                                </span>
+                                <span class="menu-title">{{ $m->menu_name }}</span>
                             </span>
-                            <span class="menu-title">{{ $m->menu_name }}</span>
-                        </span>
-                        <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
-                            @if ($m->submenu)
-                                @foreach ($m->submenu as $s)
-                                    <div class="menu-item">
-                                        <a class="menu-link"
-                                            href="{{$s->url}}">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot"></span>
-                                            </span>
-                                            <span class="menu-title">{{$s->submenu_name}}</span>
-                                        </a>
-                                    </div>
-                                @endforeach
-                            @endif
+                            <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
+                                @if ($m->submenu)
+                                    @foreach ($m->submenu as $s)
+                                        <div class="menu-item">
+                                            <a class="menu-link" href="{{ $s->url }}">
+                                                <span class="menu-bullet">
+                                                    <span class="bullet bullet-dot"></span>
+                                                </span>
+                                                <span class="menu-title">{{ $s->submenu_name }}</span>
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 @endforeach
             </div>
             <!--end::Menu-->

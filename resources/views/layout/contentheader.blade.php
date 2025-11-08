@@ -11,13 +11,6 @@
         ->pluck('menu_id')
         ->values();
 
-    $submenuId = $role->role_access
-        ->filter(function ($item) {
-            return $item['submenu_id'];
-        })
-        ->pluck('submenu_id')
-        ->values();
-
     $menu = Menu::whereIn('id', $menuId)->get();
     $segmentsfn = function () {
         $seg = request()->segments();
@@ -1854,7 +1847,7 @@
                 <ul class="breadcrumb breadcrumb-separatorless fw-bold fs-7 my-1">
                     <!--begin::Item-->
                     <li class="breadcrumb-item text-muted">
-                        <a href="../../demo6/dist/index.html" class="text-muted text-hover-primary">Home</a>
+                        <a href="{{route('dashboard')}}" class="text-muted text-hover-primary">Home</a>
                     </li>
                     <!--end::Item-->
 
