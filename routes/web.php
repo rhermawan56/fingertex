@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\MachineController;
+use App\Http\Controllers\Absensi\DashboardabsensiController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
