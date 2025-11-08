@@ -303,7 +303,8 @@ class Employee extends Model
             $userFile = '';
             $userInfo = Http::withToken(self::$JWTTOKEN)->post(self::$getUser, $dataSend);
 
-            while (!Storage::exists($userFileName) && $waited < $maxWait) {
+            // while (!Storage::exists($userFileName) && $waited < $maxWait) {
+            while ($waited < $maxWait) {
                 usleep($interval * 1_000_000);
                 $waited += $interval;
             }
