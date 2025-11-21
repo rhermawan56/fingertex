@@ -53,7 +53,7 @@ class Dashabsensi extends Model
         };
 
         // === 🧠 FILTER KOLOM ===
-        if ($columns()) {
+        if (count($columns()) > 0) {
             foreach ($columns() as $k => $v) {
                 $colName = $v['data'];
                 $val = trim($v['search']['value']);

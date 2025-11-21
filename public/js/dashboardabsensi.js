@@ -84,7 +84,7 @@ var initData = (function () {
                             orientation: 'landscape', // optional biar lebar muat semua
                             pageSize: 'A4'
                         },
-           {
+                        {
                             extend: 'print',
                             text: '<i class="fas fa-print"></i> Print',
                             className: 'dropdown-item',
@@ -172,9 +172,9 @@ var initData = (function () {
                                 $body.append(style);
                             }
                         }
-        ]
-    }
-                
+                    ]
+                }
+
             ],
 
             initComplete: function () {
