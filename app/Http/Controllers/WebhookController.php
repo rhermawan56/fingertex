@@ -12,9 +12,12 @@ class WebhookController extends BaseController
 {
     private $date;
     private $JWTTOKEN = 0;
-    private $loginUrl = "http://103.76.15.27/webhook_api/api/login";
-    private $employeesUrl = "http://103.76.15.27/webhook_api/api/get_employees";
-    private $attendanceUrl = "http://103.76.15.27/webhook_api/api/attendance_insert";
+    private $ip1 = 'http://103.76.15.27';
+    private $ip2 = 'http://119.18.157.213';
+
+    private $loginUrl = "webhook_api/api/login";
+    private $employeesUrl = "webhook_api/api/get_employees";
+    private $attendanceUrl = "webhook_api/api/attendance_insert";
     private $desc = [
         "0" => 'masuk',
         "1" => 'pulang',
@@ -57,7 +60,65 @@ class WebhookController extends BaseController
                 break;
         }
 
-        return $this->dataProcessing($status, $jsonData);
+        $connectionResponse = [];
+
+        try {
+            $response = Http::timeout(3)->get($this->ip1);
+
+            $connectionResponse = [
+                'status' => 'true',
+                'ip' => $this->ip1,
+                'desc' => 'utama',
+                'messages' => $response->status(),
+            ];
+
+            $this->loginUrl = "{$this->ip1}/{$this->loginUrl}";
+            $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
+            $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
+        } catch (\Exception $e) {
+            $connectionResponse = [
+                'status' => 'false',
+                'ip' => $this->ip1,
+                'desc' => 'utama',
+                'messages' => $e->getMessage(),
+            ];
+        }
+
+        if ($connectionResponse['status'] == 'false') {
+            try {
+                $response = Http::timeout(3)->get($this->ip2);
+
+                $connectionResponse = [
+                    'status' => 'true',
+                    'ip' => $this->ip2,
+                    'desc' => 'backup',
+                    'messages' => $response->status(),
+                ];
+
+                $this->loginUrl = "{$this->ip2}/{$this->loginUrl}";
+                $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
+                $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
+            } catch (\Exception $e) {
+                $connectionResponse = [
+                    'status' => 'false',
+                    'ip' => $this->ip2,
+                    'desc' => 'backup',
+                    'messages' => $e->getMessage(),
+                    'messages' => '2 isp down!!'
+                ];
+            }
+        }
+
+        if ($jsonData->type === 'connection') {
+            return $connectionResponse;
+        }
+
+        if ($connectionResponse['status'] === 'true') {
+            return $this->dataProcessing($status, $jsonData);
+        } else {
+            unset($connectionResponse['ip']);
+            return $connectionResponse;
+        }
 
         // $filename = 'data.txt';
         // $data = '';
