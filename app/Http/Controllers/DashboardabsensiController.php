@@ -39,6 +39,9 @@ class DashboardabsensiController extends Controller
         $data = [
             'js' => 'dashboardabsensi'
         ];
+
+
+
         return view('absensi.dashboard', $data);
     }
 

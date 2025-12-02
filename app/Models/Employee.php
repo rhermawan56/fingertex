@@ -130,16 +130,23 @@ class Employee extends Model
             }
 
             $dataSend = [
-                'wherein' => [
-                    [
-                        'field' => 'kar_id',
-                        'values' => $pin
-                    ]
-                ],
+                // 'wherein' => [
+                //     [
+                //         'field' => 'kar_idxx',
+                //         'values' => $pin
+                //     ]
+                // ],
                 "raw" => $raw,
                 "start" => $request->input('start'),
                 "length" => $request->input('length')
             ];
+
+            if (count($pin) < 1000) {
+                $dataSend['wherein'][] = [
+                    'field' => 'kar_id',
+                    'values' => $pin
+                ];
+            }
 
             $requestEmployee = Http::withToken(self::$JWTTOKEN)->post(self::$getEmployeeUrl, $dataSend);
             $requestEmployee = $requestEmployee->json();

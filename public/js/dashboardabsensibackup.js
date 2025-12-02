@@ -578,6 +578,98 @@ var initData = (function () {
     };
 })();
 
+function ajaxLoad(url, type, async, data) {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: url,
+      dataType: "JSON",
+      type: type,
+      async: async,
+      data: data,
+      success: function (data) {
+        if (type == "POST") {
+          document.querySelector('meta[name="csrf-token"]').content =
+            data.token;
+
+          let inputToken = document.querySelectorAll(
+            'input[name*="csrf_test_name"]'
+          );
+          Array.from(inputToken).map((item) => {
+            item.value = data.token;
+          });
+        }
+
+        data.token ? (window.token = data.token) : (window.token = null);
+        window.data = data;
+        resolve(data.data);
+      },
+      error: function (xhr, exception) {
+        var msg = "";
+        if (xhr.status === 0) {
+          msg = "Not connect.\n Verify Network." + xhr.responseText;
+        } else if (xhr.status == 404) {
+          msg = "Requested page not found. [404]" + xhr.responseText;
+        } else if (xhr.status == 500) {
+          msg = "Internal Server Error [500]." + xhr.responseText;
+        } else if (exception === "parsererror") {
+          msg = "Requested JSON parse failed.";
+        } else if (exception === "timeout") {
+          msg = "Time out error." + xhr.responseText;
+        } else if (exception === "abort") {
+          msg = "Ajax request aborted.";
+        } else {
+          msg = "Error:" + xhr.status + " " + xhr.responseText;
+        }
+
+        reject(msg);
+      },
+    });
+  });
+}
+
+async function getAttendance(id) {
+    let url = `${baseurl}/${fullsegment}/getattendance`;
+    let data = {
+      // ['csrf_test_name']: token,
+      date: $(id).val()
+    };
+
+    let response = await ajaxLoad(url, "GET", false, data);
+    console.log(response);
+}
+
 $(document).ready(function () {
     initData.init();
+
+    if (fullsegment.split('/').at(-1) == 'log') {
+        flatpickr($('#kt_modal_1 #date'), {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            locale: {
+                rangeSeparator: " s.d ",
+                firstDayOfWeek: 1
+            },
+            onChange: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const startDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const endDate = instance.formatDate(selectedDates[1], "Y-m-d");
+                    $('#kt_modal_1 #date').value = `${startDate} s.d ${endDate}`;
+                }
+            },
+            onClose: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const startDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const endDate = instance.formatDate(selectedDates[1], "Y-m-d");
+                    // column.search(`${startDate}_${endDate}`).draw();
+                } else {
+                    $('#kt_modal_1 #date').value = "";
+                    column.search("").draw();
+                }
+            },
+            onReady: function (selectedDates, dateStr, instance) {
+                instance.calendarContainer.classList.add("shadow-lg", "rounded");
+            }
+        });
+    }
 });

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Machine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -16,6 +18,62 @@ class Dashabsensi extends Model
     const CREATED_AT = 'create_date';
     public $timestamps = true;
     const UPDATED_AT = null;
+    private static $JWTTOKEN = '';
+    private static $loginUrl = "http://103.76.15.27/webhook_api/api/login";
+    private static $getAllPinUrl = "http://103.76.15.27/webhook_api/api/get_all_pin";
+    private static $getEmployeeUrl = "http://103.76.15.27/webhook_api/api/get_employees";
+    private static $getUser = "http://103.76.15.27/webhook_api/api/get_userinfo";
+    private static $setUser = "http://103.76.15.27/webhook_api/api/set_userinfo";
+    private static $deleteUser = "http://103.76.15.27/webhook_api/api/delete_userinfo";
+    private static $getlog = "http://103.76.15.27/webhook_api/api/get_attlog";
+    private static $attendanceUrl = "http://103.76.15.27/webhook_api/api/attendance_insert";
+
+    private static $desc = [
+        "0" => 'masuk',
+        "1" => 'pulang',
+        "2" => 'istirahat',
+        "3" => 'masuk istirahat',
+        "4" => 'masuk lembur',
+        "5" => 'pulang lembur',
+        "6" => 'masuk rapat',
+        "7" => 'keluar rapat',
+    ];
+
+    private static $verify = [
+        "1" => "finger",
+        "2" => "password",
+        "3" => "card",
+        "4" => "face",
+        "6" => "vein",
+        "7" => "QR",
+    ];
+
+    public static function loginApi()
+    {
+        try {
+            $response = Http::post(
+                self::$loginUrl,
+                [
+                    'username' => env('API_USERNAME'),
+                    'password' => env('API_PASSWORD')
+                ]
+            );
+
+            $response = $response->json();
+            self::$JWTTOKEN = $response['token'];
+
+            return response()->json([
+                'status' => true,
+                'messages' => 'Success Login'
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'messages' => $e->getMessage()
+            ], 400);
+        }
+    }
 
     public static function fetchdata(Request $request)
     {

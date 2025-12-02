@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller as BaseController;
 use App\Models\Attendance;
+use App\Models\Machine;
 
 class WebhookController extends BaseController
 {
@@ -202,9 +203,13 @@ class WebhookController extends BaseController
                 }
 
                 try {
+                    $machine = Machine::where('cloud_id', $data->cloud_id)->first();
                     $dataSend = [
-                        'kar_id' => $data->data->pin
+                        'kar_id' => $data->data->pin,
+                        'company' => $machine->company
                     ];
+
+                    // dd($dataSend);
 
                     $responseData = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
                     $responseData = $responseData->json();
@@ -222,7 +227,7 @@ class WebhookController extends BaseController
                         'karyawan_id' => $responseData['kar_id'],
                         'karyawan_name' => $responseData['nama'],
                         'cloud_id' => $data->cloud_id,
-                        'company' => 'PT. KAHAPTEX',
+                        'company' => $machine->company,
                         'create_date' => date('Y-m-d H:i:s'),
                         'validation' => '1',
                         'verification_method' => $this->verify[$data->data->verify]
@@ -235,7 +240,8 @@ class WebhookController extends BaseController
                         Attendance::where([
                             'karyawan_id' => $responseData['kar_id'],
                             'tgl_absen' => explode(' ', $data->data->scan)[0],
-                            'status' => $this->desc[$data->data->status_scan]
+                            'status' => $this->desc[$data->data->status_scan],
+                            'cloud_id' => $data->cloud_id
                         ])->update([
                             'jam' => explode(' ', $data->data->scan)[1]
                         ]);

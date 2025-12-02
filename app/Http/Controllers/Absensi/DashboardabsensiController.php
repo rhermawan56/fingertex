@@ -37,7 +37,7 @@ class DashboardabsensiController extends Controller
     public function index()
     {
         $data = [
-            'js' => 'dashboardabsensi'
+            'js' => 'dashboardabsensi2'
         ];
         return view('absensi.dashboard', $data);
     }
