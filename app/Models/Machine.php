@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class Machine extends Model
 {
@@ -23,6 +24,29 @@ class Machine extends Model
     private static $loginUrl = "http://103.76.15.27/webhook_api/api/login";
     private static $setTimeUrl = "http://103.76.15.27/webhook_api/api/set_time";
     private static $restartMachineUrl = "http://103.76.15.27/webhook_api/api/restart_device";
+    private static $getlog = "http://103.76.15.27/webhook_api/api/get_attlog";
+    private static $getemployee = "http://103.76.15.27/webhook_api/api/get_employees";
+    private static $attendanceUrl = "http://103.76.15.27/webhook_api/api/attendance_insert";
+
+    private static $desc = [
+        "0" => 'masuk',
+        "1" => 'pulang',
+        "2" => 'istirahat',
+        "3" => 'masuk istirahat',
+        "4" => 'masuk lembur',
+        "5" => 'pulang lembur',
+        "6" => 'masuk rapat',
+        "7" => 'keluar rapat',
+    ];
+
+    private static $verify = [
+        "1" => "finger",
+        "2" => "password",
+        "3" => "card",
+        "4" => "face",
+        "6" => "vein",
+        "7" => "QR",
+    ];
 
     public static function loginApi()
     {
@@ -168,6 +192,92 @@ class Machine extends Model
             return response()->json([
                 'status' => true,
                 'data' => $restartMachine['data']['success'],
+                'messages' => 'success',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'data' => [],
+                'messages' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public static function getattendance(Request $request)
+    {
+        self::loginApi();
+        $machine = Machine::where('cloud_id', $request->cloud_id)->first();
+        $currentDate = date('Y-m-d');
+        $lastDate = Carbon::parse($currentDate)->subDay();
+        $lastDate = $lastDate->toDateString();
+
+        try {
+            $dataSend = [
+                "trans_id" => "1",
+                "cloud_id" => "{$request['cloud_id']}",
+                "start_date" => $lastDate,
+                "end_date" => $currentDate
+            ];
+
+            $getlog = Http::withToken(self::$JWTTOKEN)->post(self::$getlog, $dataSend);
+            $getlog->json();
+
+            $logdata = $getlog['data']['data'] ?? [];
+
+            if (!$logdata) {
+                return response()->json([
+                    'status' => false,
+                    'data' => $logdata,
+                    'messages' => "Tidak ada data di tanggal {$lastDate} s.d {$currentDate}",
+                ], 404);
+            }
+
+            foreach ($logdata as $k => $v) {
+                $dataSend = [
+                    'kar_id' => $v['pin'],
+                    'company' => $machine->company
+                ];
+
+                $getemployee = Http::withToken(self::$JWTTOKEN)->post(self::$getemployee, $dataSend);
+                $getemployee = $getemployee->json();
+                $employeeData = $getemployee['data'] ?? [];
+
+                if ($employeeData) {
+                    $dataInsert = [
+                        'tgl_absen' => explode(' ', $v['scan_date'])[0],
+                        'jam' => explode(' ', $v['scan_date'])[1],
+                        'status' => self::$desc[$v['status_scan']],
+                        'karyawan_id' => $v['pin'],
+                        'karyawan_name' => $employeeData[0]['nama'],
+                        'cloud_id' => $request['cloud_id'],
+                        'company' => $machine->company,
+                        'create_date' => date('Y-m-d'),
+                        'validation' => '1',
+                        'verification_method' => self::$verify[$v['verify']],
+                    ];
+
+                    $check = Attendance::where(['karyawan_id' => $v['pin'], 'tgl_absen' => explode(' ', $v['scan_date'])[0], 'status' => self::$desc[$v['status_scan']]])->count();
+
+                    if ($check == 0) {
+                        Attendance::insert($dataInsert);
+                        Http::withToken(self::$JWTTOKEN)->post(self::$attendanceUrl, $dataInsert);
+                    } else {
+                        Attendance::where([
+                            'karyawan_id' => $v['pin'],
+                            'tgl_absen' => explode(' ', $v['scan_date'])[0],
+                            'status' => self::$desc[$v['status_scan']],
+                            'cloud_id' => $request['cloud_id']
+                        ])->update([
+                            'jam' => explode(' ', $v['scan_date'])[1]
+                        ]);
+                        Http::withToken(self::$JWTTOKEN)->post(self::$attendanceUrl, $dataInsert);
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $getlog['data']['success'],
                 'messages' => 'success',
             ], 200);
         } catch (\Exception $e) {

@@ -32,7 +32,7 @@ class MachineController extends Controller
     public function index()
     {
         $data = [
-            'js' => 'machine'
+            'js' => 'machine1'
         ];
 
         return view('machine.index', $data);
@@ -46,7 +46,7 @@ class MachineController extends Controller
     public function create()
     {
         $data = [
-            'js' => 'machine'
+            'js' => 'machine1'
         ];
 
         return view('machine.create', $data);
@@ -121,7 +121,7 @@ class MachineController extends Controller
     {
         $data = [
             'data' => Machine::where('msn_id', decrypt($id))->first(),
-            'js' => 'machine'
+            'js' => 'machine1'
         ];
 
         return view('machine.edit', $data);
@@ -231,6 +231,23 @@ class MachineController extends Controller
             // 'recordsTotal' => $data['rows'],
             // 'recordsFiltered' => $data['rows'],
             'data' => $data['data'],
+            'token' => csrf_token(),
+            // 'permission' => $roleaccess,
+            // 'request' => $request->all()
+        ], 200);
+    }
+
+    public function getattendance(Request $request) {
+        $data = Machine::getattendance($request);
+        $data = $data->getOriginalContent();
+
+        return response()->json([
+            // 'draw' => $request['draw'],
+            // 'recordsTotal' => $data['rows'],
+            // 'recordsFiltered' => $data['rows'],
+            'status' => $data['status'],
+            'data' => $data['data'],
+            // 'data' => $request['cloud_id'],
             'token' => csrf_token(),
             // 'permission' => $roleaccess,
             // 'request' => $request->all()
