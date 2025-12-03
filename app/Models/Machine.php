@@ -212,6 +212,10 @@ class Machine extends Model
         $lastDate = Carbon::parse($currentDate)->subDay();
         $lastDate = $lastDate->toDateString();
 
+        // if ($request['cloud_id'] == 'C2622D141F372937') {
+        //     $currentDate = '2025-12-01';
+        // }
+
         try {
             $dataSend = [
                 "trans_id" => "1",
@@ -257,6 +261,10 @@ class Machine extends Model
                         'verification_method' => self::$verify[$v['verify']],
                     ];
 
+                    // if ($dataInsert['cloud_id'] == 'C2622D141F372937') {
+                    //     dd($dataInsert);
+                    // }
+
                     $dataSend = [
                         "kar_id" => $dataInsert['karyawan_id'],
                         "company" => $dataInsert['company']
@@ -287,7 +295,7 @@ class Machine extends Model
                                 }
                             }
                         }
-                        
+
                         Http::withToken(self::$JWTTOKEN)->post(self::$attendanceUrl, $dataInsert);
                     } else {
                         Attendance::where([
