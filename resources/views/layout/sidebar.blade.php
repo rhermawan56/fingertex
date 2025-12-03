@@ -13,6 +13,7 @@
         ->values();
 
     $menu = Menu::whereIn('id', $menuId)->where('is_active', '1')->get();
+    $roleaccess = $role->role_access;
 
 @endphp
 <!--begin::Aside-->
@@ -40,7 +41,7 @@
                 id="#kt_aside_menu" data-kt-menu="true">
 
                 <div class="menu-item py-2">
-                    <a class="menu-link menu-center" href="{{route('dashboard')}}" data-bs-trigger="hover"
+                    <a class="menu-link menu-center" href="{{ route('dashboard') }}" data-bs-trigger="hover"
                         data-bs-dismiss="click" data-bs-placement="right">
                         <span class="menu-icon me-0">
                             <i class="bi bi-house fs-2"></i>
@@ -50,7 +51,6 @@
                 </div>
 
                 @foreach ($menu as $m)
-
                     @if ($m->submenu->count() > 0)
                         <div data-kt-menu-trigger="click" data-kt-menu-placement="right-start" class="menu-item py-2">
                             <span class="menu-link menu-center" data-bs-trigger="hover" data-bs-dismiss="click"
@@ -63,14 +63,22 @@
                             <div class="menu-sub menu-sub-dropdown w-225px px-1 py-4">
                                 @if ($m->submenu)
                                     @foreach ($m->submenu as $s)
-                                        <div class="menu-item">
-                                            <a class="menu-link" href="{{ $s->url }}">
-                                                <span class="menu-bullet">
-                                                    <span class="bullet bullet-dot"></span>
-                                                </span>
-                                                <span class="menu-title">{{ $s->submenu_name }}</span>
-                                            </a>
-                                        </div>
+                                        @php
+                                            $roleaccessFilter = array_filter($roleaccess->toArray(), function ($item) use ($s) {
+                                                return $item['submenu_id'] == $s->id;
+                                            });
+                                        @endphp
+
+                                        @if ($roleaccessFilter)
+                                            <div class="menu-item">
+                                                <a class="menu-link" href="{{ $s->url }}">
+                                                    <span class="menu-bullet">
+                                                        <span class="bullet bullet-dot"></span>
+                                                    </span>
+                                                    <span class="menu-title">{{ $s->submenu_name }}</span>
+                                                </a>
+                                            </div>
+                                        @endif
                                     @endforeach
                                 @endif
                             </div>
