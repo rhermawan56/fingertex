@@ -420,6 +420,8 @@ class Employee extends Model
                 if (substr($v, 0, 2) == 80) {
                     $company = 'SINAR TERANG';
                     $newPin[] = substr($v,2);
+                } else {
+                    $newPin[] = $v;
                 }
             }
 
