@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controller as BaseController;
 use App\Models\Attendance;
 use App\Models\Machine;
+use Carbon\Carbon;
 
 class WebhookController extends BaseController
 {
@@ -19,6 +20,8 @@ class WebhookController extends BaseController
     private $loginUrl = "webhook_api/api/login";
     private $employeesUrl = "webhook_api/api/get_employees";
     private $attendanceUrl = "webhook_api/api/attendance_insert";
+    private $employeesShiftUrl = "webhook_api/api/getemployeeshift";
+
     private $desc = [
         "0" => 'masuk',
         "1" => 'pulang',
@@ -76,6 +79,7 @@ class WebhookController extends BaseController
             $this->loginUrl = "{$this->ip1}/{$this->loginUrl}";
             $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
             $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
+            $this->employeesShiftUrl = "{$this->ip1}/{$this->employeesShiftUrl}";
         } catch (\Exception $e) {
             $connectionResponse = [
                 'status' => 'false',
@@ -99,6 +103,7 @@ class WebhookController extends BaseController
                 $this->loginUrl = "{$this->ip2}/{$this->loginUrl}";
                 $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
                 $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
+                $this->employeesShiftUrl = "{$this->ip2}/{$this->employeesShiftUrl}";
             } catch (\Exception $e) {
                 $connectionResponse = [
                     'status' => 'false',
@@ -218,8 +223,6 @@ class WebhookController extends BaseController
                     // return $responseData;
                     // return explode(' ', $data->data->scan)[0];
 
-                    $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
-
                     $dataInsert = [
                         'tgl_absen' => explode(' ', $data->data->scan)[0],
                         'jam' => explode(' ', $data->data->scan)[1],
@@ -233,8 +236,37 @@ class WebhookController extends BaseController
                         'verification_method' => $this->verify[$data->data->verify]
                     ];
 
+                    $dataSend = [
+                        "kar_id" => $dataInsert['karyawan_id'],
+                        "company" => $dataInsert['company']
+                    ];
+
+                    $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
+                    $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
+                    $shift2 = [5, 6, 7, 8];
+
                     if ($check == 0) {
                         Attendance::insert($dataInsert);
+
+                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                            $dataInsert['tgl_absen'] = $date->toDateString();
+                            $dataSend['raw'] = [
+                                "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                "ketgl >= '{$dataInsert['tgl_absen']}'"
+                            ];
+
+                            $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                            $employeeshift = $employeeshift->json();
+
+                            $employeeshiftData = $employeeshift['data'] ?? [];
+
+                            if ($employeeshiftData) {
+                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                    $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                }
+                            }
+                        }
+
                         Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                     } else {
                         Attendance::where([
@@ -245,6 +277,25 @@ class WebhookController extends BaseController
                         ])->update([
                             'jam' => explode(' ', $data->data->scan)[1]
                         ]);
+
+                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                            $dataInsert['tgl_absen'] = $date->toDateString();
+                            $dataSend['raw'] = [
+                                "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                "ketgl >= '{$dataInsert['tgl_absen']}'"
+                            ];
+
+                            $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                            $employeeshift = $employeeshift->json();
+
+                            $employeeshiftData = $employeeshift['data'] ?? [];
+
+                            if ($employeeshiftData) {
+                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                    $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                }
+                            }
+                        }
                         Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                     }
 

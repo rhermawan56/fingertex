@@ -27,6 +27,7 @@ class Machine extends Model
     private static $getlog = "http://103.76.15.27/webhook_api/api/get_attlog";
     private static $getemployee = "http://103.76.15.27/webhook_api/api/get_employees";
     private static $attendanceUrl = "http://103.76.15.27/webhook_api/api/attendance_insert";
+    private static $employeesShiftUrl = "http://103.76.15.27/webhook_api/api/getemployeeshift";
 
     private static $desc = [
         "0" => 'masuk',
@@ -215,7 +216,7 @@ class Machine extends Model
             $dataSend = [
                 "trans_id" => "1",
                 "cloud_id" => "{$request['cloud_id']}",
-                "start_date" => $lastDate,
+                "start_date" => $currentDate,
                 "end_date" => $currentDate
             ];
 
@@ -256,20 +257,67 @@ class Machine extends Model
                         'verification_method' => self::$verify[$v['verify']],
                     ];
 
-                    $check = Attendance::where(['karyawan_id' => $v['pin'], 'tgl_absen' => explode(' ', $v['scan_date'])[0], 'status' => self::$desc[$v['status_scan']]])->count();
+                    $dataSend = [
+                        "kar_id" => $dataInsert['karyawan_id'],
+                        "company" => $dataInsert['company']
+                    ];
 
+                    $check = Attendance::where(['karyawan_id' => $v['pin'], 'tgl_absen' => $dataInsert['tgl_absen'], 'status' => self::$desc[$v['status_scan']]])->count();
+                    $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
+                    $shift2 = [5, 6, 7, 8];
+                    
                     if ($check == 0) {
                         Attendance::insert($dataInsert);
+
+                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                            $dataInsert['tgl_absen'] = $date->toDateString();
+                            $dataSend['raw'] = [
+                                "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                "ketgl >= '{$dataInsert['tgl_absen']}'"
+                            ];
+
+                            $employeeshift = Http::withToken(self::$JWTTOKEN)->post(self::$employeesShiftUrl, $dataSend);
+                            $employeeshift = $employeeshift->json();
+
+                            $employeeshiftData = $employeeshift['data'] ?? [];
+
+                            if ($employeeshiftData) {
+                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                    $dataInsert['tgl_absen'] = explode(' ', $v['scan_date'])[0];
+                                }
+                            }
+                        }
+                        
                         Http::withToken(self::$JWTTOKEN)->post(self::$attendanceUrl, $dataInsert);
                     } else {
                         Attendance::where([
                             'karyawan_id' => $v['pin'],
-                            'tgl_absen' => explode(' ', $v['scan_date'])[0],
+                            'tgl_absen' => $dataInsert['tgl_absen'],
                             'status' => self::$desc[$v['status_scan']],
                             'cloud_id' => $request['cloud_id']
                         ])->update([
                             'jam' => explode(' ', $v['scan_date'])[1]
                         ]);
+
+                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                            $dataInsert['tgl_absen'] = $date->toDateString();
+                            $dataSend['raw'] = [
+                                "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                "ketgl >= '{$dataInsert['tgl_absen']}'"
+                            ];
+
+                            $employeeshift = Http::withToken(self::$JWTTOKEN)->post(self::$employeesShiftUrl, $dataSend);
+                            $employeeshift = $employeeshift->json();
+
+                            $employeeshiftData = $employeeshift['data'] ?? [];
+
+                            if ($employeeshiftData) {
+                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                    $dataInsert['tgl_absen'] = explode(' ', $v['scan_date'])[0];
+                                }
+                            }
+                        }
+
                         Http::withToken(self::$JWTTOKEN)->post(self::$attendanceUrl, $dataInsert);
                     }
                 }
@@ -277,7 +325,7 @@ class Machine extends Model
 
             return response()->json([
                 'status' => true,
-                'data' => $getlog['data']['success'],
+                'data' => $logdata,
                 'messages' => 'success',
             ], 200);
         } catch (\Exception $e) {
