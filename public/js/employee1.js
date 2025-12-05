@@ -460,13 +460,26 @@ function ajaxLoad(url, type, async, data) {
 }
 
 async function syncdata(params) {
+    let card = $(params).closest('div.card');
+    $(card).addClass('overlay overlay-block');
+    $(card).children().addClass('overlay-wrapper');
+    $(card).append(
+        `<div class="overlay-layer flex-column card-rounded bg-dark bg-opacity-25">
+            <span class="spinner-border text-primary" role="status"></span></br>
+            <span class="text-gray-800 fs-6 fw-semibold mt-5">Loading...</span>
+        </div>`
+    );
+
     let url = `${baseurl}/${fullsegment}/syncdata`
     let dataSend = {
         _token: document.querySelector('meta[name="csrf-token"]').content,
     }
     let response = await ajaxLoad(url, 'POST', false, dataSend);
-
     console.log(response);
+
+    $(card).removeClass('overlay overlay-block');
+    $(card).children().removeClass('overlay-wrapper');
+    $(card).find('div.overlay-layer').remove();
 }
 
 $(document).ready(function () {
