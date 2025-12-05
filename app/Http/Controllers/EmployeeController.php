@@ -32,7 +32,7 @@ class EmployeeController extends Controller
     {
         $data = [
             'title' => 'tes',
-            'js' => 'employee'
+            'js' => 'employee1'
         ];
         return view('employee.index', $data);
     }
@@ -78,12 +78,20 @@ class EmployeeController extends Controller
     public function edit($id)
     {
         $machine = Machine::all();
-        $employee = Employee::getDataEmployee($id, $machine)->getOriginalContent();
+        $employee = Employee::where('kar_id', $id)->first();
+        if ($employee) {
+            $cloudId = [];
+            foreach ($employee->employee_machines as $k => $v) {
+                $cloudId[] = $v->cloud_id;
+            }
+
+            $employee['cloud_id'] = collect($cloudId);
+        }
 
         $data = [
-            'data' => (object) $employee['data'],
+            'data' => $employee,
             'machine' => $machine,
-            'js' => 'employee'
+            'js' => 'employee1'
         ];
 
         return view('employee.edit', $data);
@@ -101,7 +109,7 @@ class EmployeeController extends Controller
 
         $rules = [
             'kar_id' => 'required',
-            'nama' => 'required',
+            'employee_name' => 'required',
             'removemachine' => ['nullable', 'array'],
             'removemachine.*' => ['string', 'exists:ms_mesin,cloud_id'],
             'addmachine' => ['nullable', 'array'],
@@ -110,7 +118,7 @@ class EmployeeController extends Controller
 
         $messages = [
             'kar_id.required' => 'This field is required!',
-            'nama.required' => 'This field is required!',
+            'employee_name.required' => 'This field is required!',
         ];
 
         if (!$request->addmachine && !$request->removemachine) {
@@ -162,8 +170,63 @@ class EmployeeController extends Controller
             return $item['submenu_id'] == $submenu->id;
         })->values();
 
-        $machine = Machine::all();
-        $data = Employee::getDataEmployees($request, $machine)->getOriginalContent();
+        $newData = [];
+        $data = Employee::getDataEmployees($request)->getOriginalContent();
+
+        foreach ($data['data'] as $k => $v) {
+            $d = $v->toArray();
+            $d['machine'] = collect($v->employee_machines)->map(function ($item) {
+                $item['msn_name'] = $item->machine->msn_name;
+                return $item;
+            })->toArray();
+
+            $newData[] = $d;
+        }
+
+
+        $columns = function () use ($request) {
+            return collect($request->columns)->filter(function ($item) {
+                return $item['search']['value'];
+            })->toArray();
+        };
+
+        // $teslagi = collect($newData[0]['machine'])->filter(function ($item) {
+        //     return preg_match('/knitting/i', $item['msn_name']);
+        // })->toArray();
+
+        // dd($teslagi);
+
+        // $tes = collect($newData)->filter(function ($item) {
+        //     return collect($item['machine'])->filter(function ($it) {
+        //         return preg_match('/knitting/i', $it['msn_name']);
+        //     })->toArray();
+        // })->values()->all();
+
+        if ($columns()) {
+            foreach ($columns() as $k => $v) {
+                $after = [];
+                $before = [];
+                $none = [];
+                $includeFilter = ['machine', 'cloud_id'];
+
+                if ($v['data'] == 'machine') {
+                    $newData = collect($newData)->filter(function ($item) use ($v) {
+                        return collect($item['machine'])->filter(function ($it) use ($v) {
+                            return preg_match('/'. preg_quote($v['search']['value'], '/') .'/i', $it['msn_name']);
+                        })->toArray();
+                    })->values()->all();
+                }
+
+                if ($v['data'] == 'cloud_id') {
+                    $newData = collect($newData)->filter(function ($item) use ($v) {
+                        return collect($item['machine'])->filter(function ($it) use ($v) {
+                            return preg_match('/'. preg_quote($v['search']['value'], '/') .'/i', $it['cloud_id']);
+                        })->toArray();
+                    })->values()->all();
+                }
+            }
+        }
+
         // $data = Employee::getDataEmployees($request, $machine);
         // return $data;
 
@@ -173,11 +236,22 @@ class EmployeeController extends Controller
             'draw' => $request['draw'],
             'recordsTotal' => $data['rows'],
             'recordsFiltered' => $data['rows'],
-            'data' => $data['data'],
+            'data' => $newData,
             'permission' => $roleaccess,
             'token' => csrf_token(),
             'start' => $request->input('start'),
             'messages' => $data['messages']
+        ], 200);
+    }
+
+    public function syncdata(Request $request) {
+        $data = Employee::syncdata($request);
+        $data = $data->getOriginalContent();
+
+        return response()->json([
+            'status' => $data['status'],
+            'data' => $data['messages'],
+            'token' => csrf_token()
         ], 200);
     }
 }

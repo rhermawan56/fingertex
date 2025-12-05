@@ -84,10 +84,10 @@
                     <div class="row mb-6">
                         <label class="col-lg-4 col-form-label required fw-bold fs-7">Employee Name</label>
                         <div class="col-lg-8 fv-row">
-                            <input type="text" name="nama"
+                            <input type="text" name="employee_name"
                                 class="form-control form-control-sm form-control-solid pe-none" placeholder="Udin"
-                                value="{{ $data->nama }}" readonly />
-                            @error('msn_type')
+                                value="{{ $data->employee_name }}" readonly />
+                            @error('employee_name')
                                 <small class="text-danger">{{ '* ' . $message }}</small>
                             @enderror
                         </div>
@@ -105,9 +105,6 @@
                                     </option>
                                 @endforeach
                             </select>
-
-                            {{-- <input type="text" name="cloud_id" class="form-control form-control-sm form-control"
-                                placeholder="" value="" /> --}}
                             @error('machine')
                                 <small class="text-danger">{{ '* ' . $message }}</small>
                             @enderror
@@ -125,9 +122,6 @@
                                     @endif
                                 @endforeach
                             </select>
-
-                            {{-- <input type="text" name="cloud_id" class="form-control form-control-sm form-control"
-                                placeholder="" value="" /> --}}
                             @error('addmachine')
                                 <small class="text-danger">{{ '* ' . $message }}</small><br>
                             @enderror
@@ -147,11 +141,7 @@
                                         <option value="{{ $m->cloud_id }}">{{ $m->msn_name }}</option>
                                     @endif
                                 @endforeach
-                                <option value="123">tes</option>
                             </select>
-
-                            {{-- <input type="text" name="cloud_id" class="form-control form-control-sm form-control"
-                                placeholder="" value="" /> --}}
                             @error('removemachine')
                                 <small class="text-danger">{{ '* ' . $message }}</small><br>
                             @enderror

@@ -28,7 +28,7 @@
             <div class="card card-flush h-md-100">
                 <div class="card-body d-flex flex-column justify-content-between">
                     <div class="d-flex flex-stack">
-                        <span class="fs-2hx fw-bold text-primary">{{ $employees->rows }}</span>
+                        <span class="fs-2hx fw-bold text-primary">{{ count($employees) }}</span>
                         <i class="bi bi-people fs-1 text-info"></i>
                     </div>
                     <div class="fw-semibold fs-6 text-gray-400">Total Karyawan</div>

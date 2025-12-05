@@ -240,7 +240,7 @@ var initData = (function () {
             columns: [
                 { data: null },
                 { data: "kar_id" },
-                { data: "employee_name" },
+                { data: "nama" },
                 { data: "machine" },
                 { data: "cloud_id" },
                 { data: null },
@@ -261,8 +261,8 @@ var initData = (function () {
                     targets: [-3],
                     render: function (data, type, row, meta) {
                         let span = '';
-                        row.machine.forEach(e => {
-                            span = `${span} <span class="badge badge-info">${e.msn_name}</span><br>`
+                        data.forEach(e => {
+                            span = `${span} <span class="badge badge-info">${e}</span><br>`
                         });
 
                         return span;
@@ -273,8 +273,8 @@ var initData = (function () {
                     class: 'text-center px-6',
                     render: function (data, type, row, meta) {
                         let span = '';
-                        row.machine.forEach(e => {
-                            span = `${span} <span class="badge badge-info">${e.cloud_id}</span><br>`
+                        data.forEach(e => {
+                            span = `${span} <span class="badge badge-info">${e}</span><br>`
                         });
 
                         return span;
@@ -291,6 +291,7 @@ var initData = (function () {
 
 
                         if (window.permission) {
+                            console.log(window.permission);
                             let menuValue = false;
 
                             if (!menuValue) {
@@ -408,65 +409,6 @@ function alerts2(params) {
             $(form).submit();
         }
     });
-}
-
-function ajaxLoad(url, type, async, data) {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: url,
-      dataType: "JSON",
-      type: type,
-      async: async,
-      data: data,
-      success: function (data) {
-        if (type == "POST") {
-          document.querySelector('meta[name="csrf-token"]').content =
-            data.token;
-
-          let inputToken = document.querySelectorAll(
-            'input[name*="_token"]'
-          );
-          Array.from(inputToken).map((item) => {
-            item.value = data.token;
-          });
-        }
-
-        data.token ? (window.token = data.token) : (window.token = null);
-        window.data = data;
-        resolve(data.data);
-      },
-      error: function (xhr, exception) {
-        var msg = "";
-        if (xhr.status === 0) {
-          msg = "Not connect.\n Verify Network." + xhr.responseText;
-        } else if (xhr.status == 404) {
-          msg = "Requested page not found. [404]" + xhr.responseText;
-        } else if (xhr.status == 500) {
-          msg = "Internal Server Error [500]." + xhr.responseText;
-        } else if (exception === "parsererror") {
-          msg = "Requested JSON parse failed.";
-        } else if (exception === "timeout") {
-          msg = "Time out error." + xhr.responseText;
-        } else if (exception === "abort") {
-          msg = "Ajax request aborted.";
-        } else {
-          msg = "Error:" + xhr.status + " " + xhr.responseText;
-        }
-
-        reject(msg);
-      },
-    });
-  });
-}
-
-async function syncdata(params) {
-    let url = `${baseurl}/${fullsegment}/syncdata`
-    let dataSend = {
-        _token: document.querySelector('meta[name="csrf-token"]').content,
-    }
-    let response = await ajaxLoad(url, 'POST', false, dataSend);
-
-    console.log(response);
 }
 
 $(document).ready(function () {
