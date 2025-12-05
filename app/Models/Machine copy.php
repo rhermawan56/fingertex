@@ -49,10 +49,6 @@ class Machine extends Model
         "7" => "QR",
     ];
 
-    public function employee_machines() {
-        return $this->hasMany(EmployeeMachine::class, 'msn_id', 'msn_id');
-    }
-
     public static function loginApi()
     {
         try {
