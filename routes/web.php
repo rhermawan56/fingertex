@@ -27,8 +27,9 @@ Route::get('/updatpassword', [LoginController::class, 'updatpassword'])->name('u
 
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('employees/employee', EmployeeController::class)->except(['fetchdata', 'create'])->names('employee');
+    Route::resource('employees/employee', EmployeeController::class)->except(['fetchdata', 'create', 'syncdata'])->names('employee');
     Route::post('employees/employee/fetchdata', [EmployeeController::class, 'fetchdata'])->name('employee.fetchdata');
+    Route::post('employees/employee/syncdata', [EmployeeController::class, 'syncdata'])->name('employee.syncdata');
     Route::get('absensi/log', [DashboardabsensiController::class, 'index'])->name('historyabsen');
     Route::post('absensi/log/fetchdata', [DashboardabsensiController::class, 'fetchdata'])->name('fetchdata');
     Route::resource('absensi/mesinfinger', MachineController::class)->except(['fetchdata', 'resettime', 'restartmachine', 'getattendance'])->names('machine');

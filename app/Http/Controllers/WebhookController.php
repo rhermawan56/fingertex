@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
 use App\Models\Attendance;
+use App\Models\Employee;
+use App\Models\EmployeeMachine;
 use App\Models\Machine;
 use Carbon\Carbon;
 
@@ -57,6 +60,10 @@ class WebhookController extends BaseController
         switch ($jsonData->type) {
             case 'attlog':
                 $status = $this->attlog($body, $jsonData, 'attlog');
+                break;
+
+            case 'get_userid_list':
+                $status = $this->userlist($body, $jsonData, 'get_userid_list');
                 break;
 
             default:
@@ -167,6 +174,26 @@ class WebhookController extends BaseController
         }
     }
 
+    private function userlist($body, $jsonData, $name)
+    {
+        $filename = "{$name}_{$this->date}.txt";
+
+        $data = '';
+        if (Storage::exists($filename)) {
+            $data = Storage::get($filename);
+        }
+
+        $data .= $body . "\n";
+
+        try {
+            Storage::put($filename, $data);
+
+            return response('OK', 200);
+        } catch (\Exception $e) {
+            return response('FAIL', 400);
+        }
+    }
+
     private function logs($body, $jsonData, $name)
     {
         $filename = "{$name}_{$this->date}.txt";
@@ -190,7 +217,9 @@ class WebhookController extends BaseController
     private function dataProcessing($status, $data)
     {
         if ($status->getOriginalContent() == 'OK') {
-            if ($data->type == 'attlog') {
+            $include = ['attlog', 'get_userid_list'];
+
+            if (in_array($data->type, $include)) {
                 $dataLogin = [
                     'username' => env('API_USERNAME'),
                     'password' => env('API_PASSWORD')
@@ -207,107 +236,288 @@ class WebhookController extends BaseController
                     ], 400);
                 }
 
-                try {
-                    $machine = Machine::where('cloud_id', $data->cloud_id)->first();
-                    $dataSend = [
-                        'kar_id' => $data->data->pin,
-                        'company' => $machine->company
-                    ];
+                $machine = Machine::where('cloud_id', $data->cloud_id)->first();
 
-                    // dd($dataSend);
+                if ($data->type == 'attlog') {
+                    try {
+                        $dataSend = [
+                            'kar_id' => $data->data->pin,
+                            'company' => $machine->company
+                        ];
 
-                    $responseData = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
-                    $responseData = $responseData->json();
-                    $responseData = $responseData['data'][0];
+                        // dd($dataSend);
 
-                    // return $responseData;
-                    // return explode(' ', $data->data->scan)[0];
+                        $responseData = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
+                        $responseData = $responseData->json();
+                        $responseData = $responseData['data'][0];
 
-                    $dataInsert = [
-                        'tgl_absen' => explode(' ', $data->data->scan)[0],
-                        'jam' => explode(' ', $data->data->scan)[1],
-                        'status' => $this->desc[$data->data->status_scan],
-                        'karyawan_id' => $responseData['kar_id'],
-                        'karyawan_name' => $responseData['nama'],
-                        'cloud_id' => $data->cloud_id,
-                        'company' => $machine->company,
-                        'create_date' => date('Y-m-d H:i:s'),
-                        'validation' => '1',
-                        'verification_method' => $this->verify[$data->data->verify]
-                    ];
+                        // return $responseData;
+                        // return explode(' ', $data->data->scan)[0];
 
-                    $dataSend = [
-                        "kar_id" => $dataInsert['karyawan_id'],
-                        "company" => $dataInsert['company']
-                    ];
-
-                    $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
-                    $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
-                    $shift2 = [5, 6, 7, 8];
-
-                    if ($check == 0) {
-                        Attendance::insert($dataInsert);
-
-                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
-                            $dataInsert['tgl_absen'] = $date->toDateString();
-                            $dataSend['raw'] = [
-                                "drtgl <= '{$dataInsert['tgl_absen']}'",
-                                "ketgl >= '{$dataInsert['tgl_absen']}'"
-                            ];
-
-                            $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                            $employeeshift = $employeeshift->json();
-
-                            $employeeshiftData = $employeeshift['data'] ?? [];
-
-                            if ($employeeshiftData) {
-                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                    $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
-                                }
-                            }
-                        }
-
-                        Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                    } else {
-                        Attendance::where([
-                            'karyawan_id' => $responseData['kar_id'],
+                        $dataInsert = [
                             'tgl_absen' => explode(' ', $data->data->scan)[0],
+                            'jam' => explode(' ', $data->data->scan)[1],
                             'status' => $this->desc[$data->data->status_scan],
-                            'cloud_id' => $data->cloud_id
-                        ])->update([
-                            'jam' => explode(' ', $data->data->scan)[1]
-                        ]);
+                            'karyawan_id' => $responseData['kar_id'],
+                            'karyawan_name' => $responseData['nama'],
+                            'cloud_id' => $data->cloud_id,
+                            'company' => $machine->company,
+                            'create_date' => date('Y-m-d H:i:s'),
+                            'validation' => '1',
+                            'verification_method' => $this->verify[$data->data->verify]
+                        ];
 
-                        if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
-                            $dataInsert['tgl_absen'] = $date->toDateString();
-                            $dataSend['raw'] = [
-                                "drtgl <= '{$dataInsert['tgl_absen']}'",
-                                "ketgl >= '{$dataInsert['tgl_absen']}'"
-                            ];
+                        $dataSend = [
+                            "kar_id" => $dataInsert['karyawan_id'],
+                            "company" => $dataInsert['company']
+                        ];
 
-                            $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                            $employeeshift = $employeeshift->json();
+                        $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
+                        $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
+                        $shift2 = [5, 6, 7, 8];
 
-                            $employeeshiftData = $employeeshift['data'] ?? [];
+                        if ($check == 0) {
+                            Attendance::insert($dataInsert);
 
-                            if ($employeeshiftData) {
-                                if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                    $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                            if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                                $dataInsert['tgl_absen'] = $date->toDateString();
+                                $dataSend['raw'] = [
+                                    "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                    "ketgl >= '{$dataInsert['tgl_absen']}'"
+                                ];
+
+                                $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                                $employeeshift = $employeeshift->json();
+
+                                $employeeshiftData = $employeeshift['data'] ?? [];
+
+                                if ($employeeshiftData) {
+                                    if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                        $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                    }
+                                }
+                            }
+
+                            Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
+                        } else {
+                            Attendance::where([
+                                'karyawan_id' => $responseData['kar_id'],
+                                'tgl_absen' => explode(' ', $data->data->scan)[0],
+                                'status' => $this->desc[$data->data->status_scan],
+                                'cloud_id' => $data->cloud_id
+                            ])->update([
+                                'jam' => explode(' ', $data->data->scan)[1]
+                            ]);
+
+                            if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
+                                $dataInsert['tgl_absen'] = $date->toDateString();
+                                $dataSend['raw'] = [
+                                    "drtgl <= '{$dataInsert['tgl_absen']}'",
+                                    "ketgl >= '{$dataInsert['tgl_absen']}'"
+                                ];
+
+                                $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                                $employeeshift = $employeeshift->json();
+
+                                $employeeshiftData = $employeeshift['data'] ?? [];
+
+                                if ($employeeshiftData) {
+                                    if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                        $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                    }
+                                }
+                            }
+                            Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
+                        }
+
+                        return response()->json([
+                            'status' => true,
+                            'messages' => 'Data berhasil disimpan'
+                        ], 200);
+                    } catch (\Exception $e) {
+                        return response()->json([
+                            'status' => false,
+                            'messages' => $e->getMessage()
+                        ], 400);
+                    }
+                }
+
+                if ($data->type == 'get_userid_list') {
+                    try {
+                        $dataSend = [
+                            "company" => "kahaptex",
+                            "lokasi" => '1',
+                            "start" => 0,
+                            "length" => 2000
+                        ];
+                        $employeeKahap = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
+                        $employeeKahap = $employeeKahap->json();
+                        $employeeKahapData = $employeeKahap['data'] ?? [];
+                        $employeeKahapFilter = [];
+
+                        $dataSend = [
+                            "company" => "sinar terang",
+                            "start" => 0,
+                            "length" => 2000
+                        ];
+                        $employeeSinter = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
+                        $employeeSinter = $employeeSinter->json();
+                        $employeeSinterData = $employeeSinter['data'] ?? [];
+                        $employeeSinterFilter = [];
+
+                        $pin = $data->data->pin_arr;
+                        $pinSinter = collect($pin)->filter(function ($item) {
+                            return substr($item, 0, 2) == 80;
+                        })->toArray();
+
+                        $pinKahap = collect($pin)->filter(function ($item) {
+                            return substr($item, 0, 2) !== 80;
+                        })->toArray();
+
+                        if ($employeeKahapData) {
+                            $employeeKahapFilter = collect($employeeKahapData)->whereIn('kar_id', $pinKahap)->values()->all();
+
+                            if ($employeeKahapFilter) {
+                                $employeeKahapFilter = collect($employeeKahapFilter)->map(function ($item) {
+                                    $item['company'] = 'PT. KAHAPTEX';
+
+                                    return $item;
+                                });
+                            }
+                        }
+
+                        if ($employeeSinterData) {
+                            $employeeSinterData = collect($employeeSinterData)->map(function ($item) {
+                                $item['kar_id'] = "80{$item['kar_id']}";
+
+                                return $item;
+                            });
+
+                            $employeeSinterFilter = collect($employeeSinterData)->whereIn('kar_id', $pinSinter)->values()->all();
+
+                            if ($employeeSinterFilter) {
+                                $employeeSinterFilter = collect($employeeSinterFilter)->map(function ($item) {
+                                    $item['company'] = 'PT. SINAR TERANG';
+
+                                    return $item;
+                                });
+                            }
+                        }
+
+                        if ($employeeKahapFilter) {
+                            foreach ($employeeKahapFilter as $k => $v) {
+                                $checkData = Employee::where('kar_id', $v['kar_id'])->first();
+
+                                if (!$checkData) {
+                                    DB::beginTransaction();
+                                    try {
+                                        $insert = Employee::create([
+                                            'kar_id' => $v['kar_id'],
+                                            'employee_name' => $v['nama'],
+                                            'employee_company' => $v['company']
+                                        ]);
+
+                                        EmployeeMachine::create([
+                                            'employee_id' => $insert->employee_id,
+                                            'kar_id' => $v['kar_id'],
+                                            'msn_id' => $machine->msn_id,
+                                            'cloud_id' => $machine->cloud_id,
+                                        ]);
+
+                                        DB::commit();
+                                    } catch (\Exception $th) {
+                                        DB::rollBack();
+                                    }
+                                } else {
+                                    $employeemachine = EmployeeMachine::where([
+                                        'employee_id' => $checkData->employee_id,
+                                        'kar_id' => $checkData->kar_id,
+                                        'msn_id' => $machine->msn_id,
+                                        'cloud_id' => $machine->cloud_id
+                                    ])->first();
+
+                                    if (!$employeemachine) {
+                                        DB::beginTransaction();
+
+                                        try {
+                                            EmployeeMachine::create([
+                                                'employee_id' => $checkData->employee_id,
+                                                'kar_id' => $checkData->kar_id,
+                                                'msn_id' => $machine->msn_id,
+                                                'cloud_id' => $machine->cloud_id
+                                            ]);
+
+                                            DB::commit();
+                                        } catch (\Exception $th) {
+                                            DB::rollBack();
+                                        }
+                                    }
                                 }
                             }
                         }
-                        Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                    }
 
-                    return response()->json([
-                        'status' => true,
-                        'messages' => 'Data berhasil disimpan'
-                    ], 200);
-                } catch (\Exception $e) {
-                    return response()->json([
-                        'status' => false,
-                        'messages' => $e->getMessage()
-                    ], 400);
+                        if ($employeeSinterFilter) {
+                            foreach ($employeeSinterFilter as $k => $v) {
+                                $checkData = Employee::where('kar_id', $v['kar_id'])->first();
+
+                                if (!$checkData) {
+                                    DB::beginTransaction();
+                                    try {
+                                        $insert = Employee::create([
+                                            'kar_id' => $v['kar_id'],
+                                            'employee_name' => $v['nama'],
+                                            'employee_company' => $v['company']
+                                        ]);
+
+                                        EmployeeMachine::create([
+                                            'employee_id' => $insert->employee_id,
+                                            'kar_id' => $v['kar_id'],
+                                            'msn_id' => $machine->msn_id,
+                                            'cloud_id' => $machine->cloud_id,
+                                        ]);
+
+                                        DB::commit();
+                                    } catch (\Exception $th) {
+                                        DB::rollBack();
+                                    }
+                                } else {
+                                    $employeemachine = EmployeeMachine::where([
+                                        'employee_id' => $checkData->employee_id,
+                                        'kar_id' => $checkData->kar_id,
+                                        'msn_id' => $machine->msn_id,
+                                        'cloud_id' => $machine->cloud_id
+                                    ])->first();
+
+                                    if (!$employeemachine) {
+                                        DB::beginTransaction();
+
+                                        try {
+                                            EmployeeMachine::create([
+                                                'employee_id' => $checkData->employee_id,
+                                                'kar_id' => $checkData->kar_id,
+                                                'msn_id' => $machine->msn_id,
+                                                'cloud_id' => $machine->cloud_id
+                                            ]);
+
+                                            DB::commit();
+                                        } catch (\Exception $th) {
+                                            DB::rollBack();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return response()->json([
+                            'status' => $status->getOriginalContent(),
+                            'message' => 'Data tersimpan di logs'
+                        ], 200);
+                    } catch (\Exception $e) {
+                        return response()->json([
+                            'status' => $status->getOriginalContent(),
+                            'message' => $e->getMessage()
+                        ], 500);
+                    }
                 }
             } else {
                 return response()->json([
