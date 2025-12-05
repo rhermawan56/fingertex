@@ -32,7 +32,7 @@ class EmployeeController extends Controller
     {
         $data = [
             'title' => 'tes',
-            'js' => 'employee2'
+            'js' => 'employee3'
         ];
         return view('employee.index', $data);
     }
@@ -91,7 +91,7 @@ class EmployeeController extends Controller
         $data = [
             'data' => $employee,
             'machine' => $machine,
-            'js' => 'employee2'
+            'js' => 'employee3'
         ];
 
         return view('employee.edit', $data);
