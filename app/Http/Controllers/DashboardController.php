@@ -38,7 +38,8 @@ class DashboardController extends Controller
     {
         $request = new Request();
         $machine = Machine::all();
-        $employees = Employee::getDataEmployees($request, $machine)->getOriginalContent();
+        // $employees = Employee::getDataEmployees($request, $machine)->getOriginalContent();
+        $employees = Employee::all();
         $attendaces = Attendance::where('tgl_absen', date('Y-m-d'))
             ->select('absensi.*')
             ->whereIn('id', function ($query) {
