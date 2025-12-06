@@ -20,3 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('webhook', [WebhookController::class, 'receive']);
+Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
