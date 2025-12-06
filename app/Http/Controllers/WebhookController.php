@@ -730,12 +730,12 @@ class WebhookController extends BaseController
             }
 
             $res = [
-                'status' => false,
+                'status' => true,
                 'cloud_id' => $machine->cloud_id,
                 'data' => $getAttLog['data']
             ];
 
-            $data .= json_encode($res);
+            $data .= "\n" . json_encode($res);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
