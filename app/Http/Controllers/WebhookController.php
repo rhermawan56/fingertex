@@ -644,7 +644,7 @@ class WebhookController extends BaseController
                     $status = $this->desc[$v['status_scan']];
 
                     if (preg_match('/sinar terang/i', $machine->msn_name)) {
-                        if (substr($karyawan_id, 0, 2) !== 80) {
+                        if (substr($karyawan_id, 0, 2) !== '80') {
                             $karyawan_id = "80{$karyawan_id}";
                         }
                     }
@@ -663,6 +663,7 @@ class WebhookController extends BaseController
                             "ketgl >= '{$tglShift}'"
                         ]
                     ];
+
                     $employeeShift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
                     $employeeShift = $employeeShift->json();
                     $employeeShiftData = $employeeShift['data'] ? (object) $employeeShift['data'][0] : [];
