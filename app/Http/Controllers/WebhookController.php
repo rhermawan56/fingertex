@@ -618,9 +618,19 @@ class WebhookController extends BaseController
         }
 
         $currentDate = date('Y-m-d');
-        if ($day == 'yesterday') {
+        if ($day == 'now') {
+            $currentDate = $currentDate;
+        } else if ($day == 'yesterday') {
             $currentDate = Carbon::parse($currentDate)->subDay();
             $currentDate = $currentDate->toDateString();
+        } else {
+            $format = 'Y-m-d';
+            try {
+                $currentDate = Carbon::createFromFormat($format, $day);
+                $currentDate = $currentDate->toDateString();
+            } catch (\Exception $e) {
+                dd($e->getMessage());
+            }
         }
 
         try {
