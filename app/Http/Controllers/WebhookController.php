@@ -274,6 +274,7 @@ class WebhookController extends BaseController
                         ];
 
                         $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
+                        $days = Carbon::parse($dataInsert['tgl_absen'])->locale('id')->isoFormat('dddd');
                         $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
                         $shift2 = [5, 6, 7, 8];
 
@@ -293,12 +294,13 @@ class WebhookController extends BaseController
                                 $employeeshiftData = $employeeshift['data'] ?? [];
 
                                 if ($employeeshiftData) {
-                                    if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                        $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                    if ($days != 'Senin') {
+                                        if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                            $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                        }
                                     }
                                 }
                             }
-
                             Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                         } else {
                             Attendance::where([
@@ -323,8 +325,10 @@ class WebhookController extends BaseController
                                 $employeeshiftData = $employeeshift['data'] ?? [];
 
                                 if ($employeeshiftData) {
-                                    if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                        $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                    if ($days != 'Senin') {
+                                        if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
+                                            $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
+                                        }
                                     }
                                 }
                             }
@@ -650,6 +654,7 @@ class WebhookController extends BaseController
                     $karyawan_id = $v['pin'];
                     $tglabsen = explode(' ', $v['scan_date'])[0];
                     $tglShift = $tglabsen;
+                    $hari = Carbon::parse($tglabsen)->locale('id')->isoFormat('dddd');
                     $jam = explode(' ', $v['scan_date'])[1];
                     $status = $this->desc[$v['status_scan']];
 
@@ -716,8 +721,10 @@ class WebhookController extends BaseController
 
                         if ($employeeShiftData) {
                             if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
-                                if ($employeeShiftData->id_shift == 'Shift 1') {
-                                    $tglShift = $tglabsen;
+                                if ($hari !== 'Senin') {
+                                    if ($employeeShiftData->id_shift == 'Shift 1') {
+                                        $tglShift = $tglabsen;
+                                    }
                                 }
                             }
                             
