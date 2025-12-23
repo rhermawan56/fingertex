@@ -380,46 +380,53 @@ class Employee extends Model
         $maxWait = 15;
         $interval = 0.5;
         $waited = 0;
+        $template = null;
+        $employeeCheck = Employee::where('kar_id', $request->kar_id)->whereNotNull('template')->first();
 
         try {
-            $userFileName = "get_userinfo_{$now}.txt";
-
-            $dataSend = [
-                "trans_id" => "1",
-                "cloud_id" => "{$request->machine[0]}",
-                "pin" => "{$request->kar_id}"
-            ];
-
-            $userFile = '';
-            $userInfo = Http::withToken(self::$JWTTOKEN)->post(self::$getUser, $dataSend);
-
-            // while (!Storage::exists($userFileName) && $waited < $maxWait) {
-            while ($waited < $maxWait) {
-                usleep($interval * 1_000_000);
-                $waited += $interval;
-            }
-
-            $userFile = Storage::get($userFileName);
-            $linesUserFile = array_filter(array_map('trim', explode("\n", $userFile)));
-            $userFileJson = [];
-            foreach ($linesUserFile as $line) {
-                $decoded = json_decode($line, true);
-                if ($decoded !== null) {
-                    $userFileJson[] = $decoded;
+            if (!$employeeCheck) {
+                $userFileName = "get_userinfo_{$now}.txt";
+    
+                $dataSend = [
+                    "trans_id" => "1",
+                    "cloud_id" => "{$request->machine[0]}",
+                    "pin" => "{$request->kar_id}"
+                ];
+    
+                $userFile = '';
+                $userInfo = Http::withToken(self::$JWTTOKEN)->post(self::$getUser, $dataSend);
+    
+                // while (!Storage::exists($userFileName) && $waited < $maxWait) {
+                while ($waited < $maxWait) {
+                    usleep($interval * 1_000_000);
+                    $waited += $interval;
                 }
-            }
-
-            $userFileJsonUnique = collect($userFileJson)
-                ->filter(function ($item) use ($request) {
-                    if (isset($item['data']['pin'])) {
-                        return $item['data']['pin'] == $request->kar_id && $item['cloud_id'] == $request->machine[0];
+    
+                $userFile = Storage::get($userFileName);
+                $linesUserFile = array_filter(array_map('trim', explode("\n", $userFile)));
+                $userFileJson = [];
+                foreach ($linesUserFile as $line) {
+                    $decoded = json_decode($line, true);
+                    if ($decoded !== null) {
+                        $userFileJson[] = $decoded;
                     }
-                })
-                ->keyBy('cloud_id')
-                ->values()
-                ->toArray();
-
-            $userFileJsonUnique = (object) $userFileJsonUnique[0];
+                }
+    
+                $userFileJsonUnique = collect($userFileJson)
+                    ->filter(function ($item) use ($request) {
+                        if (isset($item['data']['pin'])) {
+                            return $item['data']['pin'] == $request->kar_id && $item['cloud_id'] == $request->machine[0];
+                        }
+                    })
+                    ->keyBy('cloud_id')
+                    ->values()
+                    ->toArray();
+    
+                $userFileJsonUnique = (object) $userFileJsonUnique[0];
+                $template = $userFileJsonUnique->data['template'];
+            } else {
+                $template = $employeeCheck->template;
+            }
 
             if ($request->addmachine) {
                 $addFileName = "set_userinfo_{$now}.txt";
@@ -432,10 +439,11 @@ class Employee extends Model
                         "data" => [
                             "pin" => "{$request->kar_id}",
                             "name" => "{$request->nama}",
-                            "privilege" => "{$userFileJsonUnique->data['privilege']}",
-                            "password" => "{$userFileJsonUnique->data['template']}",
-                            "rfid" => "{$userFileJsonUnique->data['template']}",
-                            "template" => "{$userFileJsonUnique->data['template']}"
+                            // "privilege" => "{$userFileJsonUnique->data['privilege']}",
+                            "privilege" => "1",
+                            "password" => "{$template}",
+                            "rfid" => "{$template}",
+                            "template" => "{$template}"
                         ]
                     ];
 
