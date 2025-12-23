@@ -240,25 +240,31 @@ class WebhookController extends BaseController
                 $machine = Machine::where('cloud_id', $data->cloud_id)->first();
 
                 if ($data->type == 'attlog') {
+                    $shift2 = [5, 6, 7, 8];
+                    $tglabsen = explode(' ', $data->data->scan)[0];
+                    $tglShift = $tglabsen;
+                    $jam = explode(' ', $data->data->scan)[1];
+                    $status = $this->desc[$data->data->status_scan];
+
+                    if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
+                        $tglShift = Carbon::parse($tglabsen)->subDay();
+                        $tglShift = $tglShift->toDateString();
+                    }
+
                     try {
                         $dataSend = [
                             'kar_id' => $data->data->pin,
                             'company' => $machine->company
                         ];
 
-                        // dd($dataSend);
-
                         $responseData = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
                         $responseData = $responseData->json();
                         $responseData = $responseData['data'][0];
 
-                        // return $responseData;
-                        // return explode(' ', $data->data->scan)[0];
-
                         $dataInsert = [
-                            'tgl_absen' => explode(' ', $data->data->scan)[0],
-                            'jam' => explode(' ', $data->data->scan)[1],
-                            'status' => $this->desc[$data->data->status_scan],
+                            'tgl_absen' => $tglabsen,
+                            'jam' => $jam,
+                            'status' => $status,
                             'karyawan_id' => $responseData['kar_id'],
                             'karyawan_name' => $responseData['nama'],
                             'cloud_id' => $data->cloud_id,
@@ -276,32 +282,9 @@ class WebhookController extends BaseController
                         $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
                         $days = Carbon::parse($dataInsert['tgl_absen'])->locale('id')->isoFormat('dddd');
                         $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
-                        $shift2 = [5, 6, 7, 8];
 
                         if ($check == 0) {
                             Attendance::insert($dataInsert);
-
-                            if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
-                                $dataInsert['tgl_absen'] = $date->toDateString();
-                                // $dataSend['raw'] = [
-                                //     "drtgl <= '{$dataInsert['tgl_absen']}'",
-                                //     "ketgl >= '{$dataInsert['tgl_absen']}'"
-                                // ];
-
-                                // $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                                // $employeeshift = $employeeshift->json();
-
-                                // $employeeshiftData = $employeeshift['data'] ?? [];
-
-                                // if ($employeeshiftData) {
-                                //     if ($days != 'Senin') {
-                                //         if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                //             $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
-                                //         }
-                                //     }
-                                // }
-                            }
-                            Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                         } else {
                             Attendance::where([
                                 'karyawan_id' => $responseData['kar_id'],
@@ -311,27 +294,24 @@ class WebhookController extends BaseController
                             ])->update([
                                 'jam' => explode(' ', $data->data->scan)[1]
                             ]);
+                        }
 
-                            if ($dataInsert['status'] == 'pulang' && in_array(substr($dataInsert['jam'], 0, 2), $shift2)) {
-                                $dataInsert['tgl_absen'] = $date->toDateString();
-                                // $dataSend['raw'] = [
-                                //     "drtgl <= '{$dataInsert['tgl_absen']}'",
-                                //     "ketgl >= '{$dataInsert['tgl_absen']}'"
-                                // ];
+                        $dataSend['raw'] = [
+                            "drtgl <= '{$tglShift}'",
+                            "ketgl >= '{$tglShift}'"
+                        ];
 
-                                // $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                                // $employeeshift = $employeeshift->json();
+                        $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                        $employeeshift = $employeeshift->json();
+                        $employeeshiftData = $employeeshift['data'] ? (object) $employeeshift['data'][0] : [];
 
-                                // $employeeshiftData = $employeeshift['data'] ?? [];
-
-                                // if ($employeeshiftData) {
-                                //     if ($days != 'Senin') {
-                                //         if ($employeeshiftData[0]['id_shift'] == 'Shift 1') {
-                                //             $dataInsert['tgl_absen'] = explode(' ', $data->data->scan)[0];
-                                //         }
-                                //     }
-                                // }
+                        if ($employeeshiftData) {
+                            if ($status == 'pulang' && $employeeshiftData->id_shift == 'Shift 1') {
+                                $tglShift = $tglabsen;
                             }
+                            
+                            $dataInsert['tgl_absen'] = $tglShift;
+
                             Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                         }
 
@@ -669,18 +649,18 @@ class WebhookController extends BaseController
                         $tglShift = $tglShift->toDateString();
                     }
 
-                    // $dataSend = [
-                    //     "kar_id" => $karyawan_id,
-                    //     "company" => $machine->company,
-                    //     'raw' => [
-                    //         "drtgl <= '{$tglShift}'",
-                    //         "ketgl >= '{$tglShift}'"
-                    //     ]
-                    // ];
+                    $dataSend = [
+                        "kar_id" => $karyawan_id,
+                        "company" => $machine->company,
+                        'raw' => [
+                            "drtgl <= '{$tglShift}'",
+                            "ketgl >= '{$tglShift}'"
+                        ]
+                    ];
 
-                    // $employeeShift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                    // $employeeShift = $employeeShift->json();
-                    // $employeeShiftData = $employeeShift['data'] ? (object) $employeeShift['data'][0] : [];
+                    $employeeShift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
+                    $employeeShift = $employeeShift->json();
+                    $employeeShiftData = $employeeShift['data'] ? (object) $employeeShift['data'][0] : [];
 
                     $employee = Employee::where('kar_id', $karyawan_id)->first();
 
@@ -718,16 +698,12 @@ class WebhookController extends BaseController
                             ]);
                         }
 
-                        // if ($employeeShiftData) {
-                            // if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
-                            //     $tglShift = $tglabsen;
-                            //     // if ($hari !== 'Senin') {
-                            //     //     if ($employeeShiftData->id_shift == 'Shift 1') {
-                            //     //         $tglShift = $tglabsen;
-                            //     //     }
-                            //     // }
-                            // }
-                            
+                        if ($employeeShiftData) {
+
+                            if ($status == 'pulang' && $employeeShiftData->id_shift == 'Shift 1') {
+                                $tglShift = $tglabsen;
+                            }
+
                             $dataInsert = [
                                 'tgl_absen' => $tglShift,
                                 'jam' => $jam,
@@ -742,7 +718,7 @@ class WebhookController extends BaseController
                             ];
 
                             Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                        // }
+                        }
                     }
                 }
             }
