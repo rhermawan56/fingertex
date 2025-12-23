@@ -25,6 +25,7 @@ class WebhookController extends BaseController
     private $attendanceUrl = "webhook_api/api/attendance_insert";
     private $employeesShiftUrl = "webhook_api/api/getemployeeshift";
     private $getAllLog = "webhook_api/api/get_attlog";
+    private $getUser = "webhook_api/api/get_userinfo";
 
     private $desc = [
         "0" => 'masuk',
@@ -88,6 +89,7 @@ class WebhookController extends BaseController
             $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
             $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
             $this->employeesShiftUrl = "{$this->ip1}/{$this->employeesShiftUrl}";
+            $this->getUser = "{$this->ip1}/{$this->getUser}";
         } catch (\Exception $e) {
             $connectionResponse = [
                 'status' => 'false',
@@ -112,6 +114,7 @@ class WebhookController extends BaseController
                 $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
                 $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
                 $this->employeesShiftUrl = "{$this->ip2}/{$this->employeesShiftUrl}";
+                $this->getUser = "{$this->ip2}/{$this->getUser}";
             } catch (\Exception $e) {
                 $connectionResponse = [
                     'status' => 'false',
@@ -309,10 +312,55 @@ class WebhookController extends BaseController
                             if ($status == 'pulang' && $employeeshiftData->id_shift == 'Shift 1') {
                                 $tglShift = $tglabsen;
                             }
-                            
+
                             $dataInsert['tgl_absen'] = $tglShift;
 
                             Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
+                        }
+
+                        $employeeCheckTemplate = Employee::where('kar_id', $dataInsert['karyawan_id'])->whereNull('template')->first();
+
+                        if ($employeeCheckTemplate) {
+                            $now = date('Y_m_d');
+                            $maxWait = 15;
+                            $interval = 0.5;
+                            $waited = 0;
+
+                            $userInfo = Http::withToken($this->JWTTOKEN)->post($this->getUser, $dataSend);
+
+                            // while (!Storage::exists($userFileName) && $waited < $maxWait) {
+                            while ($waited < $maxWait) {
+                                usleep($interval * 1_000_000);
+                                $waited += $interval;
+                            }
+
+                            $userFileName = "get_userinfo_{$now}.txt";
+                            $userFile = Storage::get($userFileName);
+
+                            $linesUserFile = array_filter(array_map('trim', explode("\n", $userFile)));
+                            $userFileJson = [];
+                            foreach ($linesUserFile as $line) {
+                                $decoded = json_decode($line, true);
+                                if ($decoded !== null) {
+                                    $userFileJson[] = $decoded;
+                                }
+                            }
+
+                            $userFileJsonUnique = collect($userFileJson)
+                                ->filter(function ($item) use ($employeeCheckTemplate) {
+                                    if (isset($item['data']['pin'])) {
+                                        return $item['data']['pin'] == $employeeCheckTemplate->kar_id;
+                                    }
+                                })
+                                ->keyBy('cloud_id')
+                                ->values()
+                                ->toArray();
+
+                            $userFileJsonUnique = (object) $userFileJsonUnique[0];
+
+                            if ($userFileJsonUnique) {
+                                Employee::where('kar_id', $dataInsert['karyawan_id'])->update(['template' => $userFileJsonUnique->data['template']]);
+                            }
                         }
 
                         return response()->json([
@@ -388,6 +436,8 @@ class WebhookController extends BaseController
                                 });
                             }
                         }
+
+                        // dd('a');
 
                         if ($employeeKahapFilter) {
                             foreach ($employeeKahapFilter as $k => $v) {
