@@ -424,6 +424,7 @@ class Employee extends Model
     
                 $userFileJsonUnique = (object) $userFileJsonUnique[0];
                 $template = $userFileJsonUnique->data['template'];
+                Employee::where('kar_id', $request->kar_id)->update(['template' => $template]);
             } else {
                 $template = $employeeCheck->template;
             }
