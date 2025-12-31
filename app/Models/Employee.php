@@ -381,6 +381,7 @@ class Employee extends Model
         $interval = 0.5;
         $waited = 0;
         $template = null;
+        $name  = null;
         $employeeCheck = Employee::where('kar_id', $request->kar_id)->whereNotNull('template')->first();
 
         try {
@@ -424,9 +425,11 @@ class Employee extends Model
     
                 $userFileJsonUnique = (object) $userFileJsonUnique[0];
                 $template = $userFileJsonUnique->data['template'];
-                Employee::where('kar_id', $request->kar_id)->update(['template' => $template]);
+                $name = $userFileJsonUnique->data['name'];
+                Employee::where('kar_id', $request->kar_id)->update(['template' => $template, 'employee_name_machine' => $name]);
             } else {
                 $template = $employeeCheck->template;
+                $name = $employeeCheck->employee_name_machine;
             }
 
             if ($request->addmachine) {
@@ -439,7 +442,7 @@ class Employee extends Model
                         "cloud_id" => "{$v}",
                         "data" => [
                             "pin" => "{$request->kar_id}",
-                            "name" => "{$request->nama}",
+                            "name" => "{$name}",
                             // "privilege" => "{$userFileJsonUnique->data['privilege']}",
                             "privilege" => "1",
                             "password" => "{$template}",

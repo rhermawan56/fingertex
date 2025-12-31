@@ -359,7 +359,7 @@ class WebhookController extends BaseController
                             $userFileJsonUnique = (object) $userFileJsonUnique[0];
 
                             if ($userFileJsonUnique) {
-                                Employee::where('kar_id', $dataInsert['karyawan_id'])->update(['template' => $userFileJsonUnique->data['template']]);
+                                Employee::where('kar_id', $dataInsert['karyawan_id'])->update(['template' => $userFileJsonUnique->data['template'], 'employee_name_machine' => $userFileJsonUnique->data['name']]);
                             }
                         }
 
