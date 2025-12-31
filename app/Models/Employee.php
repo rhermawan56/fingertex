@@ -495,7 +495,8 @@ class Employee extends Model
     public static function syncdata(Request $request)
     {
         self::loginApi();
-        $machine = Machine::all()->toArray();
+        // $machine = Machine::all()->toArray();
+        $machine = Machine::where('msn_status', '1')->get()->toArray();
         $syncdata = [];
 
         foreach ($machine as $k => $v) {
