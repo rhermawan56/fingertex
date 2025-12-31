@@ -82,7 +82,9 @@ class Machine extends Model
 
     public static function fetchdata(Request $request)
     {
-        $where = [];
+        $where = [
+            'msn_status' => '1'
+        ];
         $wherein = [];
         $wherenotin = [];
         $raw = [];
@@ -130,6 +132,10 @@ class Machine extends Model
                     $data = $data->where($v['data'], 'like', "%{$v['search']['value']}%");
                 }
             }
+        }
+
+        if ($where) {
+            $data = $data->where($where);
         }
 
         if ($order()) {
