@@ -770,6 +770,18 @@ class WebhookController extends BaseController
                             Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
                         }
                     }
+
+                    $employeemachine = EmployeeMachine::where(['kar_id' => $karyawan_id, 'msn_id' => $machine->msn_id, 'cloud_id' => $machine->cloud_id]);
+
+                    if (!$employeemachine) {
+                        EmployeeMachine::create([
+                            'employee_id' => $employee->employee_id,
+                            'kar_id' => $karyawan_id,
+                            'msn_id' => $machine->msn_id,
+                            'cloud_id' => $machine->cloud_id,
+                            'em_creation' => date('Y-m-d H:i:s')
+                        ]);
+                    }
                 }
             }
 
