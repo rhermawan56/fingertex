@@ -241,7 +241,11 @@ class Employee extends Model
 
         $response['rows'] = clone $data;
         $response['rows'] = $response['rows']->count();
-        $response['data'] = $data->offset($request->start)->limit($request->length)->get();
+        if ($request->length > -1) {
+            $response['data'] = $data->offset($request->start)->limit($request->length)->get();
+        } else {
+            $response['data'] = $data->get();
+        }
 
         return response()->json([
             'status' => true,
