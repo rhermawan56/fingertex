@@ -21,3 +21,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('webhook', [WebhookController::class, 'receive']);
 Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
+Route::get('cron2/{id}/{day}', [WebhookController::class, 'cron2']);
+Route::get('cron3/{id}/{day}', [WebhookController::class, 'cron3']);
+Route::get('tesapi', [WebhookController::class, 'tesapi']);

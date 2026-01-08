@@ -178,7 +178,7 @@
 <body id="kt_body">
   <!-- Header -->
   <div class="login-header">
-    <img src="https://103.76.15.27/attendance/public/assets/images/kahap.png" alt="Logo Fingertex">
+    <img src="{{url('/public/assets/images/kahap.png')}}" alt="Logo Fingertex">
     <h2>Fingertex Attendance</h2>
   </div>
 
