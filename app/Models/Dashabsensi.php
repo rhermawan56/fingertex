@@ -14,7 +14,7 @@ class Dashabsensi extends Model
 {
     use HasFactory;
     protected $table = 'absensi';
-    // protected $guarded = ['id'];
+    protected $guarded = ['id'];
     const CREATED_AT = 'create_date';
     public $timestamps = true;
     const UPDATED_AT = null;

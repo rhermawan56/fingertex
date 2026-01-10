@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\HitApiJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -12,45 +13,62 @@ use App\Models\Dashabsensi;
 use App\Models\Employee;
 use App\Models\EmployeeMachine;
 use App\Models\Machine;
+use App\Services\GlobalServices;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 
 class WebhookController extends BaseController
 {
     private $date;
-    private $JWTTOKEN = 0;
-    private $ip1 = 'http://192.168.3.4';
-    private $ip2 = 'http://103.76.15.27';
-    private $ip3 = 'http://119.18.157.213';
+    private $ip;
+    private $JWT_KEY;
 
-    private $loginUrl = "webhook_api/api/login";
-    private $employeesUrl = "webhook_api/api/get_employees";
-    private $attendanceUrl = "webhook_api/api/attendance_insert";
-    private $employeesShiftUrl = "webhook_api/api/getemployeeshift";
-    private $getAllLog = "webhook_api/api/get_attlog";
-    private $getUser = "webhook_api/api/get_userinfo";
+    protected GlobalServices $global;
 
-    private $desc = [
-        "0" => 'masuk',
-        "1" => 'pulang',
-        "2" => 'istirahat',
-        "3" => 'masuk istirahat',
-        "4" => 'masuk lembur',
-        "5" => 'pulang lembur',
-        "6" => 'masuk rapat',
-        "7" => 'keluar rapat',
-    ];
-    private $verify = [
-        "1" => "finger",
-        "2" => "password",
-        "3" => "card",
-        "4" => "face",
-        "6" => "vein",
-        "7" => "QR",
-    ];
-
-    public function __construct()
+    public function __construct(GlobalServices $global)
     {
+        $this->global = $global;
         $this->date = date('Y_m_d');
+    }
+
+    private function isValidDate($date): bool
+    {
+        try {
+            Carbon::createFromFormat('Y-m-d', $date);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private function checkConnection()
+    {
+        $connection = $this->global->connection();
+        $connection = (object) $connection->getOriginalContent();
+
+        if (!$connection->status) {
+            return response()->json([
+                'status' => $connection->status,
+                'messages' => "Connection Failed"
+            ], 400);
+        }
+
+        $this->ip = $connection->ip;
+    }
+
+    private function login($IP)
+    {
+        $login = $this->global->login($IP);
+        $login = (object) $login->getOriginalContent();
+
+        if (!$login->status) {
+            return response()->json([
+                'status' => $login->status,
+                'messages' => "Login Failed"
+            ], 400);
+        }
+
+        $this->JWT_KEY = $login->data['token'];
     }
 
     public function receive(Request $request)
@@ -60,1028 +78,446 @@ class WebhookController extends BaseController
 
         $jsonData = $body . "\n";
         $jsonData = json_decode($jsonData);
+        $data = (object) $jsonData;
 
-        switch ($jsonData->type) {
-            case 'attlog':
-                $status = $this->attlog($body, $jsonData, 'attlog');
-                break;
+        $log = $this->global->savelog($body, $jsonData, $jsonData->type);
+        $log = (object) $log->getOriginalContent();
 
-            case 'get_userid_list':
-                $status = $this->userlist($body, $jsonData, 'get_userid_list');
-                break;
+        if ($data->type == 'attlog') {
+            $processData = $this->attlog($data);
+            $processData = (object) $processData->getOriginalContent();
 
-            default:
-                $status = $this->logs($body, $jsonData, $jsonData->type);
-                break;
-        }
-
-        $connectionResponse = [];
-
-        try {
-            $response = Http::timeout(3)->get($this->ip1);
-
-            $connectionResponse = [
-                'status' => 'true',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $response->status(),
-            ];
-
-            $this->loginUrl = "{$this->ip1}/{$this->loginUrl}";
-            $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
-            $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
-            $this->employeesShiftUrl = "{$this->ip1}/{$this->employeesShiftUrl}";
-            $this->getUser = "{$this->ip1}/{$this->getUser}";
-        } catch (\Exception $e) {
-            $connectionResponse = [
-                'status' => 'false',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $e->getMessage(),
-            ];
-        }
-
-        if ($connectionResponse['status'] == 'false') {
-            try {
-                $response = Http::timeout(3)->get($this->ip2);
-
-                $connectionResponse = [
-                    'status' => 'true',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $response->status(),
-                ];
-
-                $this->loginUrl = "{$this->ip2}/{$this->loginUrl}";
-                $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
-                $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
-                $this->employeesShiftUrl = "{$this->ip2}/{$this->employeesShiftUrl}";
-                $this->getUser = "{$this->ip2}/{$this->getUser}";
-            } catch (\Exception $e) {
-                $connectionResponse = [
-                    'status' => 'false',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $e->getMessage(),
-                    'messages' => '2 isp down!!'
-                ];
+            if (!$processData->status) {
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
             }
+
+            return response()->json([
+                'status' => $processData->status,
+                'messages' => $processData->messages
+            ], $processData->status_response);
         }
 
-        if ($connectionResponse['status'] == 'false') {
-            try {
-                $response = Http::timeout(3)->get($this->ip3);
+        if ($data->type == 'get_userid_list') {
+            $processData = $this->userlist($data);
+            $processData = (object) $processData->getOriginalContent();
 
-                $connectionResponse = [
-                    'status' => 'true',
-                    'ip' => $this->ip3,
-                    'desc' => 'backup',
-                    'messages' => $response->status(),
-                ];
-
-                $this->loginUrl = "{$this->ip3}/{$this->loginUrl}";
-                $this->employeesUrl = "{$this->ip3}/{$this->employeesUrl}";
-                $this->attendanceUrl = "{$this->ip3}/{$this->attendanceUrl}";
-                $this->employeesShiftUrl = "{$this->ip3}/{$this->employeesShiftUrl}";
-                $this->getUser = "{$this->ip3}/{$this->getUser}";
-            } catch (\Exception $e) {
-                $connectionResponse = [
-                    'status' => 'false',
-                    'ip' => $this->ip3,
-                    'desc' => 'backup',
-                    'messages' => $e->getMessage(),
-                    'messages' => '2 isp down!!'
-                ];
+            if (!$processData->status) {
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
             }
+
+            return response()->json([
+                'status' => $processData->status,
+                'messages' => $processData->messages
+            ], $processData->status_response);
         }
 
-        if ($jsonData->type === 'connection') {
-            return $connectionResponse;
+        if ($data->type == 'get_userinfo') {
+            $processData = $this->userinfo($data);
+            $processData = (object) $processData->getOriginalContent();
+
+            if (!$processData->status) {
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
+            }
+
+            return response()->json([
+                'status' => $processData->status,
+                'messages' => $processData->messages
+            ], $processData->status_response);
+        }
+    }
+
+    private function attlog($data)
+    {
+        $attendanceDateTime = explode(' ', $data->data->scan);
+        $attendanceDate = $attendanceDateTime[0];
+        $attendanceTime = $attendanceDateTime[1];
+
+        $machine = Machine::where([
+            'msn_status' => '1',
+            'cloud_id' => $data->cloud_id
+        ])->first();
+
+        if (!$machine) {
+            return response()->json([
+                'status' => false,
+                'messages' => 'Machine not Found',
+                'status_response' => 404
+            ], 404);
         }
 
-        if ($connectionResponse['status'] === 'true') {
-            return $this->dataProcessing($status, $jsonData);
+        $employee = Employee::where([
+            'kar_id' => $data->data->pin
+        ])->first();
+
+        if (!$employee) {
+            return response()->json([
+                'status' => false,
+                'messages' => 'Employee not found',
+                'status_response' => 404
+            ], 404);
+        }
+
+        $status = $this->global->desc[$data->data->status_scan];
+        $verification_method = $this->global->verify[$data->data->verify];
+
+        $attendance = Dashabsensi::where([
+            'karyawan_id' => $data->data->pin,
+            'status' => $status,
+            'tgl_absen' => $attendanceDate
+            // 'tgl_absen' => '2025-12-23'
+        ])->first();
+
+        if (!$attendance) {
+            Dashabsensi::create([
+                "tgl_absen" => $attendanceDate,
+                "jam" => $attendanceTime,
+                "status" => $status,
+                "karyawan_id" => $data->data->pin,
+                "karyawan_name" => $employee->employee_name,
+                "cloud_id" => $machine->cloud_id,
+                "company" => $machine->company,
+                "create_date" => date('Y-m-d H:i:s'),
+                "validation" => '1',
+                "verification_method" => $verification_method
+            ]);
         } else {
-            unset($connectionResponse['ip']);
-            return $connectionResponse;
+            Dashabsensi::where([
+                'karyawan_id' => $data->data->pin,
+                'status' => $status,
+                'tgl_absen' => $attendanceDate
+            ])->update([
+                "jam" => $attendanceTime,
+                "status" => $status,
+                "create_date" => date('Y-m-d H:i:s'),
+                "validation" => '1',
+                "verification_method" => $verification_method
+            ]);
         }
 
-        // $filename = 'data.txt';
-        // $data = '';
-        // if (Storage::exists($filename)) {
-        //     $data = Storage::get($filename);
-        // }
+        $employeemachine = EmployeeMachine::where([
+            'kar_id' => $data->data->pin,
+            'msn_id' => $machine->msn_id,
+            'cloud_id' => $machine->cloud_id
+        ])->first();
 
-        // $lines = array_filter(explode("\n", trim($data)));
-        // $jsonArray = [];
+        if (!$employeemachine) {
+            EmployeeMachine::create([
+                "employee_id" => $employee->employee_id,
+                "kar_id" => $data->data->pin,
+                "msn_id" => $machine->msn_id,
+                "cloud_id" => $machine->cloud_id,
+                "em_creation" => date('Y-m-d H:i:s')
+            ]);
+        }
 
-        // foreach ($lines as $line) {
-        //     $decoded = json_decode($line, true);
-        //     $jsonArray[] = $decoded ? $decoded : $line;
-        // }
-
-        // $data .= $body . "\n";
-
-        // Storage::put($filename, $data);
-
-        // return response('OK', 200);
+        return response()->json([
+            'status' => true,
+            'messages' => 'Success',
+            'status_response' => 200
+        ], 200);
     }
 
-    private function attlog($body, $jsonData, $name)
+    private function userlist($data)
     {
-        $filename = "{$name}_{$this->date}.txt";
+        $pin = $data->data->pin_arr;
 
-        $data = '';
-        if (Storage::exists($filename)) {
-            $data = Storage::get($filename);
+        $machine = Machine::where([
+            'msn_status' => '1',
+            'cloud_id' => $data->cloud_id
+        ])->first();
+
+        if (!$machine) {
+            return response()->json([
+                'status' => false,
+                'messages' => 'Machine not Found',
+                'status_response' => 404
+            ], 404);
         }
 
-        $data .= $body . "\n";
+        $employee = Employee::whereIn('kar_id', $pin)->get();
+        $employee = collect($employee)->pluck('kar_id')->toArray();
 
-        try {
-            Storage::put($filename, $data);
+        $notEmployee = collect(array_diff($pin, $employee))->values()->toArray();
 
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            return response('FAIL', 400);
+        if ($notEmployee) {
+            foreach ($notEmployee as $k => $v) {
+                $getdata = $this->global->userinfo($k + 1, $v, $machine);
+                $getdata = (object) $getdata->json();
+
+                if (!$getdata->success) {
+                    $save = collect($getdata)->toArray();
+                    $save['pin'] = $v;
+                    $this->global->savelog(json_encode($save), $save, 'err_userinfo');
+                }
+            }
         }
+
+        return response()->json([
+            'status' => true,
+            'messages' => 'Success',
+            'status_response' => 200
+        ], 200);
     }
 
-    private function userlist($body, $jsonData, $name)
+    private function userinfo($data)
     {
-        $filename = "{$name}_{$this->date}.txt";
 
-        $data = '';
-        if (Storage::exists($filename)) {
-            $data = Storage::get($filename);
+        $machine = Machine::where([
+            'msn_status' => '1',
+            'cloud_id' => $data->cloud_id
+        ])->first();
+
+        $employee = Employee::where([
+            'kar_id' => $data->data->pin
+        ])->first();
+
+        $checkCompanyUser = substr($data->data->pin, 0, 2);
+        $userCompany = 'PT. KAHAPTEX';
+
+        if ($checkCompanyUser == '80') {
+            $userCompany = "PT.SINAR TERANG";
         }
 
-        $data .= $body . "\n";
+        if (!$employee) {
+            $this->checkConnection();
+            $this->login($this->ip);
 
-        try {
-            Storage::put($filename, $data);
+            $employeelocal = $this->global->employeelocal($this->ip, $data->data->pin, $machine, $this->JWT_KEY);
+            $employeelocal = (object) $employeelocal->json();
 
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            return response('FAIL', 400);
-        }
-    }
-
-    private function logs($body, $jsonData, $name)
-    {
-        $filename = "{$name}_{$this->date}.txt";
-
-        $data = '';
-        if (Storage::exists($filename)) {
-            $data = Storage::get($filename);
-        }
-
-        $data .= $body . "\n";
-
-        try {
-            Storage::put($filename, $data);
-
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            return response('FAIL', 400);
-        }
-    }
-
-    private function dataProcessing($status, $data)
-    {
-        if ($status->getOriginalContent() == 'OK') {
-            $include = ['attlog', 'get_userid_list'];
-
-            if (in_array($data->type, $include)) {
-                $dataLogin = [
-                    'username' => env('API_USERNAME'),
-                    'password' => env('API_PASSWORD')
-                ];
+            if ($employeelocal->data) {
+                DB::beginTransaction();
 
                 try {
-                    $responseLogin = Http::post($this->loginUrl, $dataLogin);
-                    $responseLogin = $responseLogin->json();
-                    $this->JWTTOKEN = $responseLogin['token'];
+                    $createEmployee = Employee::create([
+                        "kar_id" => $data->data->pin,
+                        "employee_name" => $employeelocal->data[0]['nama'],
+                        "employee_company" => $userCompany,
+                        "employee_name_machine" => $data->data->name,
+                        "template" => $data->data->template,
+                    ]);
+
+                    EmployeeMachine::create([
+                        "employee_id" => $createEmployee->employee_id,
+                        "kar_id" => $data->data->pin,
+                        "msn_id" => $machine->msn_id,
+                        "cloud_id" => $machine->cloud_id,
+                        "em_creation" => date('Y-m-d H:i:s')
+                    ]);
+
+                    DB::commit();
                 } catch (\Exception $e) {
-                    return response()->json([
-                        'status' => false,
-                        'messages' => $e->getMessage()
-                    ], 400);
+                    DB::rollBack();
                 }
-
-                $machine = Machine::where('cloud_id', $data->cloud_id)->first();
-
-                if ($data->type == 'attlog') {
-                    $shift2 = [5, 6, 7, 8];
-                    $tglabsen = explode(' ', $data->data->scan)[0];
-                    $tglShift = $tglabsen;
-                    $jam = explode(' ', $data->data->scan)[1];
-                    $status = $this->desc[$data->data->status_scan];
-
-                    if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
-                        $tglShift = Carbon::parse($tglabsen)->subDay();
-                        $tglShift = $tglShift->toDateString();
-                    }
-
-                    try {
-                        $dataSend = [
-                            'kar_id' => $data->data->pin,
-                            'company' => $machine->company
-                        ];
-
-                        $responseData = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
-                        $responseData = $responseData->json();
-                        $responseData = $responseData['data'][0];
-
-                        $dataInsert = [
-                            'tgl_absen' => $tglabsen,
-                            'jam' => $jam,
-                            'status' => $status,
-                            'karyawan_id' => $responseData['kar_id'],
-                            'karyawan_name' => $responseData['nama'],
-                            'cloud_id' => $data->cloud_id,
-                            'company' => $machine->company,
-                            'create_date' => date('Y-m-d H:i:s'),
-                            'validation' => '1',
-                            'verification_method' => $this->verify[$data->data->verify]
-                        ];
-
-                        $dataSend = [
-                            "kar_id" => $dataInsert['karyawan_id'],
-                            "company" => $dataInsert['company']
-                        ];
-
-                        $check = Attendance::where(['karyawan_id' => $responseData['kar_id'], 'tgl_absen' => explode(' ', $data->data->scan)[0], 'status' => $this->desc[$data->data->status_scan]])->count();
-                        $days = Carbon::parse($dataInsert['tgl_absen'])->locale('id')->isoFormat('dddd');
-                        $date = Carbon::parse($dataInsert['tgl_absen'])->subDay();
-
-                        if ($check == 0) {
-                            Attendance::insert($dataInsert);
-                        } else {
-                            Attendance::where([
-                                'karyawan_id' => $responseData['kar_id'],
-                                'tgl_absen' => explode(' ', $data->data->scan)[0],
-                                'status' => $this->desc[$data->data->status_scan],
-                                'cloud_id' => $data->cloud_id
-                            ])->update([
-                                'jam' => explode(' ', $data->data->scan)[1]
-                            ]);
-                        }
-
-                        $dataSend['raw'] = [
-                            "drtgl <= '{$tglShift}'",
-                            "ketgl >= '{$tglShift}'"
-                        ];
-
-                        $employeeshift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                        $employeeshift = $employeeshift->json();
-                        $employeeshiftData = $employeeshift['data'] ? (object) $employeeshift['data'][0] : [];
-
-                        if ($employeeshiftData) {
-                            if ($status == 'pulang' && $employeeshiftData->id_shift == 'Shift 1') {
-                                $tglShift = $tglabsen;
-                            }
-
-                            $dataInsert['tgl_absen'] = $tglShift;
-
-                            Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                        }
-
-                        $employeeCheckTemplate = Employee::where('kar_id', $data->data->pin)->whereNull('template')->first();
-
-                        if ($employeeCheckTemplate) {
-                            $now = date('Y_m_d');
-                            $maxWait = 15;
-                            $interval = 0.5;
-                            $waited = 0;
-
-                            $userInfo = Http::withToken($this->JWTTOKEN)->post($this->getUser, $dataSend);
-
-                            // while (!Storage::exists($userFileName) && $waited < $maxWait) {
-                            while ($waited < $maxWait) {
-                                usleep($interval * 1_000_000);
-                                $waited += $interval;
-                            }
-
-                            $userFileName = "get_userinfo_{$now}.txt";
-                            $userFile = Storage::get($userFileName);
-
-                            $linesUserFile = array_filter(array_map('trim', explode("\n", $userFile)));
-                            $userFileJson = [];
-                            foreach ($linesUserFile as $line) {
-                                $decoded = json_decode($line, true);
-                                if ($decoded !== null) {
-                                    $userFileJson[] = $decoded;
-                                }
-                            }
-
-                            $userFileJsonUnique = collect($userFileJson)
-                                ->filter(function ($item) use ($employeeCheckTemplate) {
-                                    if (isset($item['data']['pin'])) {
-                                        return $item['data']['pin'] == $employeeCheckTemplate->kar_id;
-                                    }
-                                })
-                                ->keyBy('cloud_id')
-                                ->values()
-                                ->toArray();
-
-                            $userFileJsonUnique = (object) $userFileJsonUnique[0];
-
-                            if ($userFileJsonUnique) {
-                                Employee::where('kar_id', $data->data->pin)->update(['template' => $userFileJsonUnique->data['template'], 'employee_name_machine' => $userFileJsonUnique->data['name']]);
-                            }
-                        }
-
-                        return response()->json([
-                            'status' => true,
-                            'messages' => 'Data berhasil disimpan'
-                        ], 200);
-                    } catch (\Exception $e) {
-                        return response()->json([
-                            'status' => false,
-                            'messages' => $e->getMessage()
-                        ], 400);
-                    }
-                }
-
-                if ($data->type == 'get_userid_list') {
-                    try {
-                        $dataSend = [
-                            "company" => "kahaptex",
-                            "lokasi" => '1',
-                            "start" => 0,
-                            "length" => 3000
-                        ];
-                        $employeeKahap = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
-                        $employeeKahap = $employeeKahap->json();
-                        $employeeKahapData = $employeeKahap['data'] ?? [];
-                        $employeeKahapFilter = [];
-
-                        $dataSend = [
-                            "company" => "sinar terang",
-                            "start" => 0,
-                            "length" => 3000
-                        ];
-                        $employeeSinter = Http::withToken($this->JWTTOKEN)->post($this->employeesUrl, $dataSend);
-                        $employeeSinter = $employeeSinter->json();
-                        $employeeSinterData = $employeeSinter['data'] ?? [];
-                        $employeeSinterFilter = [];
-
-                        $pin = $data->data->pin_arr;
-                        $pinSinter = collect($pin)->filter(function ($item) {
-                            return substr($item, 0, 2) == 80;
-                        })->toArray();
-
-                        $pinKahap = collect($pin)->filter(function ($item) {
-                            return substr($item, 0, 2) !== 80;
-                        })->toArray();
-
-                        if ($employeeKahapData) {
-                            $employeeKahapFilter = collect($employeeKahapData)->whereIn('kar_id', $pinKahap)->values()->all();
-
-                            if ($employeeKahapFilter) {
-                                $employeeKahapFilter = collect($employeeKahapFilter)->map(function ($item) {
-                                    $item['company'] = 'PT. KAHAPTEX';
-
-                                    return $item;
-                                });
-                            }
-                        }
-
-                        if ($employeeSinterData) {
-                            $employeeSinterData = collect($employeeSinterData)->map(function ($item) {
-                                $item['kar_id'] = "80{$item['kar_id']}";
-
-                                return $item;
-                            });
-
-                            $employeeSinterFilter = collect($employeeSinterData)->whereIn('kar_id', $pinSinter)->values()->all();
-
-                            if ($employeeSinterFilter) {
-                                $employeeSinterFilter = collect($employeeSinterFilter)->map(function ($item) {
-                                    $item['company'] = 'PT. SINAR TERANG';
-
-                                    return $item;
-                                });
-                            }
-                        }
-
-                        // dd('a');
-
-                        if ($employeeKahapFilter) {
-                            foreach ($employeeKahapFilter as $k => $v) {
-                                $checkData = Employee::where('kar_id', $v['kar_id'])->first();
-
-                                if (!$checkData) {
-                                    DB::beginTransaction();
-                                    try {
-                                        $insert = Employee::create([
-                                            'kar_id' => $v['kar_id'],
-                                            'employee_name' => $v['nama'],
-                                            'employee_company' => $v['company']
-                                        ]);
-
-                                        EmployeeMachine::create([
-                                            'employee_id' => $insert->employee_id,
-                                            'kar_id' => $v['kar_id'],
-                                            'msn_id' => $machine->msn_id,
-                                            'cloud_id' => $machine->cloud_id,
-                                        ]);
-
-                                        DB::commit();
-                                    } catch (\Exception $th) {
-                                        DB::rollBack();
-                                    }
-                                } else {
-                                    $employeemachine = EmployeeMachine::where([
-                                        'employee_id' => $checkData->employee_id,
-                                        'kar_id' => $checkData->kar_id,
-                                        'msn_id' => $machine->msn_id,
-                                        'cloud_id' => $machine->cloud_id
-                                    ])->first();
-
-                                    if (!$employeemachine) {
-                                        DB::beginTransaction();
-
-                                        try {
-                                            EmployeeMachine::create([
-                                                'employee_id' => $checkData->employee_id,
-                                                'kar_id' => $checkData->kar_id,
-                                                'msn_id' => $machine->msn_id,
-                                                'cloud_id' => $machine->cloud_id
-                                            ]);
-
-                                            DB::commit();
-                                        } catch (\Exception $th) {
-                                            DB::rollBack();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if ($employeeSinterFilter) {
-                            foreach ($employeeSinterFilter as $k => $v) {
-                                $checkData = Employee::where('kar_id', $v['kar_id'])->first();
-
-                                if (!$checkData) {
-                                    DB::beginTransaction();
-                                    try {
-                                        $insert = Employee::create([
-                                            'kar_id' => $v['kar_id'],
-                                            'employee_name' => $v['nama'],
-                                            'employee_company' => $v['company']
-                                        ]);
-
-                                        EmployeeMachine::create([
-                                            'employee_id' => $insert->employee_id,
-                                            'kar_id' => $v['kar_id'],
-                                            'msn_id' => $machine->msn_id,
-                                            'cloud_id' => $machine->cloud_id,
-                                        ]);
-
-                                        DB::commit();
-                                    } catch (\Exception $th) {
-                                        DB::rollBack();
-                                    }
-                                } else {
-                                    $employeemachine = EmployeeMachine::where([
-                                        'employee_id' => $checkData->employee_id,
-                                        'kar_id' => $checkData->kar_id,
-                                        'msn_id' => $machine->msn_id,
-                                        'cloud_id' => $machine->cloud_id
-                                    ])->first();
-
-                                    if (!$employeemachine) {
-                                        DB::beginTransaction();
-
-                                        try {
-                                            EmployeeMachine::create([
-                                                'employee_id' => $checkData->employee_id,
-                                                'kar_id' => $checkData->kar_id,
-                                                'msn_id' => $machine->msn_id,
-                                                'cloud_id' => $machine->cloud_id
-                                            ]);
-
-                                            DB::commit();
-                                        } catch (\Exception $th) {
-                                            DB::rollBack();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        return response()->json([
-                            'status' => $status->getOriginalContent(),
-                            'message' => 'Data tersimpan di logs'
-                        ], 200);
-                    } catch (\Exception $e) {
-                        return response()->json([
-                            'status' => $status->getOriginalContent(),
-                            'message' => $e->getMessage()
-                        ], 500);
-                    }
-                }
-            } else {
-                return response()->json([
-                    'status' => $status->getOriginalContent(),
-                    'message' => 'Data tersimpan di logs'
-                ], 200);
-            }
+            };
         } else {
-            // return 'tes';
-            return response()->json([
-                'status' => $status->getOriginalContent(),
-                'message' => 'Data tidak valid'
-            ], 400);
+            if (!$employee->template) {
+                Employee::where([
+                    'kar_id' => $data->data->pin
+                ])->update([
+                    "employee_name_machine" => $data->data->name,
+                    "template" => $data->data->template
+                ]);
+            }
+
+            $employeemachine = EmployeeMachine::where([
+                'kar_id' => $data->data->pin,
+                'msn_id' => $machine->msn_id,
+                'cloud_id' => $machine->cloud_id
+            ])->first();
+
+            if (!$employeemachine) {
+                EmployeeMachine::create([
+                    "employee_id" => $employee->employee_id,
+                    "kar_id" => $data->data->pin,
+                    "msn_id" => $machine->msn_id,
+                    "cloud_id" => $machine->cloud_id,
+                    "em_creation" => date('Y-m-d H:i:s')
+                ]);
+            }
         }
+
+        return response()->json([
+            'status' => true,
+            'messages' => 'Success',
+            'status_response' => 200
+        ], 200);
     }
 
     public function cron($id, $day)
     {
-        $connectionResponse = [];
-
-        try {
-            $response = Http::timeout(3)->get($this->ip1);
-
-            $connectionResponse = [
-                'status' => 'true',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $response->status(),
-            ];
-
-            $this->loginUrl = "{$this->ip1}/{$this->loginUrl}";
-            $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
-            $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
-            $this->employeesShiftUrl = "{$this->ip1}/{$this->employeesShiftUrl}";
-            $this->getAllLog = "{$this->ip1}/{$this->getAllLog}";
-        } catch (\Exception $e) {
-            $connectionResponse = [
-                'status' => 'false',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $e->getMessage(),
-            ];
-        }
-
-        if ($connectionResponse['status'] == 'false') {
-            try {
-                $response = Http::timeout(3)->get($this->ip2);
-
-                $connectionResponse = [
-                    'status' => 'true',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $response->status(),
-                ];
-
-                $this->loginUrl = "{$this->ip2}/{$this->loginUrl}";
-                $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
-                $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
-                $this->employeesShiftUrl = "{$this->ip2}/{$this->employeesShiftUrl}";
-                $this->getAllLog = "{$this->ip2}/{$this->getAllLog}";
-            } catch (\Exception $e) {
-                $connectionResponse = [
-                    'status' => 'false',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $e->getMessage(),
-                    'messages' => '2 isp down!!'
-                ];
-            }
-        }
-
-        $dataLogin = [
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD')
-        ];
-
-        $responseLogin = Http::post($this->loginUrl, $dataLogin);
-        $responseLogin = $responseLogin->json();
-
-        try {
-            $responseLogin = Http::post($this->loginUrl, $dataLogin);
-            $responseLogin = $responseLogin->json();
-            $this->JWTTOKEN = $responseLogin['token'];
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'messages' => $e->getMessage()
-            ], 400);
-        }
-
-        // processing
-        $shift2 = [5, 6, 7, 8];
-        $data = '';
-        $filename = "cron_{$this->date}.txt";
-        if (Storage::exists($filename)) {
-            $data = Storage::get($filename);
-        }
-
         $currentDate = date('Y-m-d');
+        $dateRequest = '';
+
         if ($day == 'now') {
-            $currentDate = $currentDate;
+            $dateRequest = $currentDate;
         } else if ($day == 'yesterday') {
-            $currentDate = Carbon::parse($currentDate)->subDay();
-            $currentDate = $currentDate->toDateString();
+            $dateRequest = Carbon::parse($currentDate)->subDay()->toDateString();
+        } else if ($this->isValidDate($day)) {
+            $dateRequest = Carbon::parse($day)->toDateString();
         } else {
-            $format = 'Y-m-d';
-            try {
-                $currentDate = Carbon::createFromFormat($format, $day);
-                $currentDate = $currentDate->toDateString();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
+            abort(400, 'Format tanggal tidak valid');
+        }
+
+        $machine = Machine::where([
+            'msn_id' => $id,
+            'msn_status' => '1'
+        ])->first();
+
+        if (!$machine) {
+            abort(404, "Mesin tidak ditemukan!");
+        }
+
+        $data = $this->global->attlog($this->ip, $machine, $dateRequest);
+        $data = (object) $data->json();
+
+        $pin = collect($data->data)->pluck('pin')->unique()->values()->toArray();
+
+        $attendance = Dashabsensi::where([
+            'tgl_absen' => $dateRequest
+        ])
+            ->whereIn('karyawan_id', $pin)
+            ->get();
+
+        $employee = Employee::whereIn('kar_id', $pin)->get();
+
+        foreach ($data->data as $k => $v) {
+            $attendanceDateTime = explode(' ', $v['scan_date']);
+            $attendanceDate = $attendanceDateTime[0];
+            $attendanceTime = $attendanceDateTime[1];
+            $verification_method = $this->global->verify[$v['verify']];
+            $status = $this->global->desc[$v['status_scan']];
+
+            $attendanceFilter = collect($attendance)->filter(function ($item) use ($v, $status) {
+                return $item->karyawan_id == $v['pin'] && $item->status == $status;
+            })->values()->toArray();
+
+            $employeeFilter = collect($employee)->filter(function ($item) use ($v) {
+                return $item->kar_id == $v['pin'];
+            })->values()->toArray();
+
+            if ($employeeFilter) {
+                $employeeFilter = (object) $employeeFilter[0];
+
+                if (!$attendanceFilter) {
+                    Dashabsensi::create([
+                        "tgl_absen" => $attendanceDate,
+                        "jam" => $attendanceTime,
+                        "status" => $status,
+                        "karyawan_id" => $v['pin'],
+                        "karyawan_name" => $employeeFilter->employee_name,
+                        "cloud_id" => $machine->cloud_id,
+                        "company" => $machine->company,
+                        "create_date" => date('Y-m-d H:i:s'),
+                        "validation" => '1',
+                        "verification_method" => $verification_method
+                    ]);
+                } else {
+                    $attendanceFilter = (object) $attendanceFilter[0];
+                    Dashabsensi::where([
+                        "tgl_absen" => $attendanceDate,
+                        "status" => $status,
+                        "karyawan_id" => $v['pin'],
+                    ])->update([
+                        "jam" => $attendanceTime,
+                        "cloud_id" => $machine->cloud_id,
+                        "company" => $machine->company,
+                        "create_date" => date('Y-m-d H:i:s'),
+                    ]);
+                }
             }
         }
 
-        try {
-            $status = true;
-            $dataResult = [];
-            $machine = Machine::where('msn_id', $id)->first();
+        HitApiJob::dispatch("fingertex.test/api/cronlocal/{$id}/{$dateRequest}");
 
-            if ($machine->msn_status == '1') {
-                $dataSend = [
-                    "trans_id" => "1",
-                    "cloud_id" => $machine->cloud_id,
-                    "start_date" => $currentDate,
-                    "end_date" => $currentDate
-                ];
-                $getAttLog = Http::withToken($this->JWTTOKEN)->post($this->getAllLog, $dataSend);
-                $getAttLog = $getAttLog->json();
-                $dataResult = $getAttLog['data'];
-                $logData = $getAttLog['data']['data'] ?? [];
+        echo 'ok';
+    }
 
-                if ($logData) {
-                    foreach ($logData as $k => $v) {
-                        $karyawan_id = $v['pin'];
-                        $tglabsen = explode(' ', $v['scan_date'])[0];
-                        $tglShift = $tglabsen;
-                        $hari = Carbon::parse($tglabsen)->locale('id')->isoFormat('dddd');
-                        $jam = explode(' ', $v['scan_date'])[1];
-                        $status = $this->desc[$v['status_scan']];
+    public function cronlocal($id, $day)
+    {
+        $currentDate = date('Y-m-d');
+        $dateRequest = '';
 
-                        if (preg_match('/sinar terang/i', $machine->msn_name)) {
-                            if (substr($karyawan_id, 0, 2) !== '80') {
-                                $karyawan_id = "80{$karyawan_id}";
-                            }
-                        }
+        if ($day == 'now') {
+            $dateRequest = $currentDate;
+        } else if ($day == 'yesterday') {
+            $dateRequest = Carbon::parse($currentDate)->subDay()->toDateString();
+        } else if ($this->isValidDate($day)) {
+            $dateRequest = Carbon::parse($day)->toDateString();
+        } else {
+            abort(400, 'Format tanggal tidak valid');
+        }
 
-                        if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
-                            $tglShift = Carbon::parse($tglabsen)->subDay();
-                            $tglShift = $tglShift->toDateString();
-                        }
+        $this->checkConnection();
+        $this->login($this->ip);
 
-                        $dataSend = [
-                            "kar_id" => $karyawan_id,
-                            "company" => $machine->company,
-                            'raw' => [
-                                "drtgl <= '{$tglShift}'",
-                                "ketgl >= '{$tglShift}'"
-                            ]
-                        ];
+        $machine = Machine::where([
+            'msn_id' => $id,
+            'msn_status' => '1'
+        ])->first();
 
-                        // $employeeShift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                        // $employeeShift = $employeeShift->json();
-                        // $employeeShiftData = $employeeShift['data'] ? (object) $employeeShift['data'][0] : [];
+        if (!$machine) {
+            abort(404);
+        }
 
-                        $employee = Employee::where('kar_id', $karyawan_id)->first();
+        $attendance = Dashabsensi::where([
+            'tgl_absen' => $dateRequest,
+            'cloud_id' => $machine->cloud_id,
+            'status_upload' => '0'
+        ])->get();
 
-                        if ($employee) {
-                            $checkData = Attendance::where([
-                                'tgl_absen' => "{$tglabsen}",
-                                'status' => "{$status}",
-                                'karyawan_id' => "{$karyawan_id}",
-                                'company' => "{$machine->company}"
-                            ])->first();
+        $pin = collect($attendance)->pluck('karyawan_id')->unique()->values()->toArray();
 
+        $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $machine, $this->JWT_KEY);
+        $employeelocal = (object) $employeelocal->json();
 
-                            if (!$checkData) {
-                                Attendance::create([
-                                    "tgl_absen" => $tglabsen,
-                                    "jam" => $jam,
-                                    "status" => $status,
-                                    "karyawan_id" => $karyawan_id,
-                                    "karyawan_name" => $employee->employee_name,
-                                    "cloud_id" => $machine->cloud_id,
-                                    "company" => $machine->company,
-                                    'create_date' => date('Y-m-d H:i:s'),
-                                    'validation' => '1',
-                                    'verification_method' => $this->verify[$v['verify']]
-                                ]);
-                            } else {
-                                Attendance::where([
-                                    "tgl_absen" => $tglabsen,
-                                    "status" => $status,
-                                    "karyawan_id" => $karyawan_id,
-                                    "company" => $machine->company,
-                                ])->update([
-                                    "jam" => $jam,
-                                    "cloud_id" => $machine->cloud_id
-                                ]);
-                            }
+        if ($attendance) {
+            foreach ($attendance as $k => &$v) {
+                $employeelocalFilter = collect($employeelocal->data)->filter(function ($item) use ($v) {
+                    return $item['kar_id'] == $v->karyawan_id;
+                })->values()->toArray();
+                if ($employeelocalFilter) {
+                    $employeelocalFilter = (object) $employeelocalFilter[0];
+                    $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
+                    $localattlog = (object) $localattlog->json();
 
-                            // if ($employeeShiftData) {
+                    if (!$localattlog->data) {
+                        $save = collect($localattlog)->toArray();
+                        $save['karyawan_id'] = $v->karyawan_id;
+                        $save['karyawan'] = $v->karyawan_name;
 
-                            //     if ($status == 'pulang' && $employeeShiftData->id_shift == 'Shift 1') {
-                            //         $tglShift = $tglabsen;
-                            //     }
-
-                            //     $dataInsert = [
-                            //         'tgl_absen' => $tglShift,
-                            //         'jam' => $jam,
-                            //         'status' => $this->desc[$v['status_scan']],
-                            //         'karyawan_id' => $karyawan_id,
-                            //         'karyawan_name' => $employee->employee_name,
-                            //         'cloud_id' => $machine->cloud_id,
-                            //         'company' => $machine->company,
-                            //         'create_date' => date('Y-m-d H:i:s'),
-                            //         'validation' => '1',
-                            //         'verification_method' => $this->verify[$v['verify']]
-                            //     ];
-
-                            //     Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                            // }
-
-                            $employeemachine = EmployeeMachine::where(['kar_id' => $karyawan_id, 'msn_id' => $machine->msn_id, 'cloud_id' => $machine->cloud_id])->first();
-
-                            if (!$employeemachine) {
-                                EmployeeMachine::create([
-                                    'employee_id' => $employee->employee_id,
-                                    'kar_id' => $karyawan_id,
-                                    'msn_id' => $machine->msn_id,
-                                    'cloud_id' => $machine->cloud_id,
-                                    'em_creation' => date('Y-m-d H:i:s')
-                                ]);
-                            }
-                        }
+                        $this->global->savelog(json_encode($save), $save, 'err_local_attlog');
+                    } else {
+                        Dashabsensi::where([
+                            "tgl_absen" => $v->tgl_absen,
+                            "status" => $v->status,
+                            "karyawan_id" => $v->karyawan_id,
+                            "cloud_id" => $v->cloud_id,
+                            "company" => $v->company
+                        ])->update([
+                            "status_upload" => $v->status_upload
+                        ]);
                     }
                 }
-            } else {
-                $status = false;
             }
-
-            $res = [
-                'status' => $status,
-                'cloud_id' => $machine->cloud_id,
-                'data' => $dataResult
-            ];
-
-            $data .= "\n" . json_encode($res);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'messages' => $e->getMessage()
-            ], 400);
-        }
-
-        try {
-            Storage::put($filename, $data);
-
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            return response('FAIL', 400);
         }
     }
 
-    public function cron3($id, $day)
+    public function worker()
     {
-        $connectionResponse = [];
-
-        try {
-            $response = Http::timeout(3)->get($this->ip1);
-
-            $connectionResponse = [
-                'status' => 'true',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $response->status(),
-            ];
-
-            $this->loginUrl = "{$this->ip1}/{$this->loginUrl}";
-            $this->employeesUrl = "{$this->ip1}/{$this->employeesUrl}";
-            $this->attendanceUrl = "{$this->ip1}/{$this->attendanceUrl}";
-            $this->employeesShiftUrl = "{$this->ip1}/{$this->employeesShiftUrl}";
-            $this->getAllLog = "{$this->ip1}/{$this->getAllLog}";
-        } catch (\Exception $e) {
-            $connectionResponse = [
-                'status' => 'false',
-                'ip' => $this->ip1,
-                'desc' => 'utama',
-                'messages' => $e->getMessage(),
-            ];
-        }
-
-        if ($connectionResponse['status'] == 'false') {
-            try {
-                $response = Http::timeout(3)->get($this->ip2);
-
-                $connectionResponse = [
-                    'status' => 'true',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $response->status(),
-                ];
-
-                $this->loginUrl = "{$this->ip2}/{$this->loginUrl}";
-                $this->employeesUrl = "{$this->ip2}/{$this->employeesUrl}";
-                $this->attendanceUrl = "{$this->ip2}/{$this->attendanceUrl}";
-                $this->employeesShiftUrl = "{$this->ip2}/{$this->employeesShiftUrl}";
-                $this->getAllLog = "{$this->ip2}/{$this->getAllLog}";
-            } catch (\Exception $e) {
-                $connectionResponse = [
-                    'status' => 'false',
-                    'ip' => $this->ip2,
-                    'desc' => 'backup',
-                    'messages' => $e->getMessage(),
-                    'messages' => '2 isp down!!'
-                ];
-            }
-        }
-
-        $dataLogin = [
-            'username' => env('API_USERNAME'),
-            'password' => env('API_PASSWORD')
-        ];
-
-        $responseLogin = Http::post($this->loginUrl, $dataLogin);
-        $responseLogin = $responseLogin->json();
-
-        try {
-            $responseLogin = Http::post($this->loginUrl, $dataLogin);
-            $responseLogin = $responseLogin->json();
-            $this->JWTTOKEN = $responseLogin['token'];
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'messages' => $e->getMessage()
-            ], 400);
-        }
-
-        // processing
-        $shift2 = [5, 6, 7, 8];
-        $data = '';
-        $filename = "cron_{$this->date}.txt";
-        if (Storage::exists($filename)) {
-            $data = Storage::get($filename);
-        }
-
-        $currentDate = date('Y-m-d');
-        if ($day == 'now') {
-            $currentDate = $currentDate;
-        } else if ($day == 'yesterday') {
-            $currentDate = Carbon::parse($currentDate)->subDay();
-            $currentDate = $currentDate->toDateString();
-        } else {
-            $format = 'Y-m-d';
-            try {
-                $currentDate = Carbon::createFromFormat($format, $day);
-                $currentDate = $currentDate->toDateString();
-            } catch (\Exception $e) {
-                dd($e->getMessage());
-            }
-        }
-
-        try {
-            $status = true;
-            $dataResult = [];
-            $machine = Machine::where('msn_id', $id)->first();
-
-            if ($machine->msn_status == '1') {
-                $dataSend = [
-                    'tgl_absen' => $currentDate,
-                    'status_upload' => '0',
-                    'cloud_id' => $machine->cloud_id
-                ];
-
-                $logData = Dashabsensi::where($dataSend)->get();
-
-                if ($logData) {
-                    foreach ($logData as $k => $v) {
-                        $v = $v->toArray();
-                        $karyawan_id = $v['karyawan_id'];
-                        $tglabsen = $v['tgl_absen'];
-                        $tglShift = $tglabsen;
-                        $hari = Carbon::parse($tglabsen)->locale('id')->isoFormat('dddd');
-                        $jam = $v['jam'];
-                        $status = $v['status'];
-
-                        if (preg_match('/sinar terang/i', $machine->msn_name)) {
-                            if (substr($karyawan_id, 0, 2) !== '80') {
-                                $karyawan_id = "80{$karyawan_id}";
-                            }
-                        }
-
-                        if ($status == 'pulang' && in_array(substr($jam, 0, 2), $shift2)) {
-                            $tglShift = Carbon::parse($tglabsen)->subDay();
-                            $tglShift = $tglShift->toDateString();
-                        }
-
-                        $dataSend = [
-                            "kar_id" => $karyawan_id,
-                            "company" => $machine->company,
-                            'raw' => [
-                                "drtgl <= '{$tglShift}'",
-                                "ketgl >= '{$tglShift}'"
-                            ]
-                        ];
-
-                        $employeeShift = Http::withToken($this->JWTTOKEN)->post($this->employeesShiftUrl, $dataSend);
-                        $employeeShift = $employeeShift->json();
-                        $employeeShiftData = $employeeShift['data'] ? (object) $employeeShift['data'][0] : [];
-
-                        if ($employeeShiftData) {
-
-                            if ($status == 'pulang' && $employeeShiftData->id_shift == 'Shift 1') {
-                                $tglShift = $tglabsen;
-                            }
-
-                            $dataInsert = [
-                                'tgl_absen' => $tglShift,
-                                'jam' => $jam,
-                                'status' => $status,
-                                'karyawan_id' => $karyawan_id,
-                                'karyawan_name' => $v['karyawan_name'],
-                                'cloud_id' => $machine->cloud_id,
-                                'company' => $machine->company,
-                                'create_date' => date('Y-m-d H:i:s'),
-                                'validation' => '1',
-                                'verification_method' => $v['verification_method']
-                            ];
-
-                            $upload = Http::withToken($this->JWTTOKEN)->post($this->attendanceUrl, $dataInsert);
-                            $upload = $upload->json();
-                            $uploadData = isset($upload['data']) ? $upload['data'] : '';
-
-                            if ($uploadData) {
-                                $dataSend = [
-                                    'tgl_absen' => $currentDate,
-                                    'cloud_id' => $machine->cloud_id,
-                                    'karyawan_id' => $karyawan_id,
-                                    'status' => $status
-                                ];
-
-                                Dashabsensi::where($dataSend)->update(['status_upload' => '1']);
-                            } else {
-                                dd($karyawan_id);
-                            }
-                        }
-
-                        // $employeemachine = EmployeeMachine::where(['kar_id' => $karyawan_id, 'msn_id' => $machine->msn_id, 'cloud_id' => $machine->cloud_id])->first();
-
-                        // if (!$employeemachine) {
-                        //     EmployeeMachine::create([
-                        //         'employee_id' => $employee->employee_id,
-                        //         'kar_id' => $karyawan_id,
-                        //         'msn_id' => $machine->msn_id,
-                        //         'cloud_id' => $machine->cloud_id,
-                        //         'em_creation' => date('Y-m-d H:i:s')
-                        //     ]);
-                        // }
-                    }
-                }
-            } else {
-                $status = false;
-            }
-
-            $res = [
-                'status' => $status,
-                'cloud_id' => $machine->cloud_id,
-                'data' => $dataResult
-            ];
-
-            $data .= "\n" . json_encode($res);
-        } catch (\Exception $e) {
-            dd($e);
-            return response()->json([
-                'status' => false,
-                'messages' => $e->getMessage()
-            ], 400);
-        }
-
-        try {
-            Storage::put($filename, $data);
-
-            return response('OK', 200);
-        } catch (\Exception $e) {
-            return response('FAIL', 400);
-        }
-    }
-
-    public function tesapi()
-    {
-        $JWTTOKEN = env("API_TOKEN");
-        $url = env('URL_TOKEN') . 'get_attlog';
-        $dataSend = [
-            "trans_id" => "1",
-            "cloud_id" => "D964B0964F312C37",
-            "start_date" => "2025-12-25",
-            "end_date" => "2025-12-25"
-        ];
-
-        $upload = Http::withToken($JWTTOKEN)->post($url, $dataSend);
-        $upload = $upload->json();
-        dd($upload);
+        Artisan::call('queue:work', [
+            '--stop-when-empty' => true,
+            '--tries' => 1,
+            '--timeout' => 60,
+        ]);
     }
 }
