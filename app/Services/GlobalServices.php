@@ -42,11 +42,11 @@ class GlobalServices
 
     public function __construct()
     {
-        $this->ArrayIp = [env('IP_ONE'), env("IP_TWO"), env('IP_THREE')];
+        $this->ArrayIp = [config('app.IP_ONE'), config('app.IP_TWO'), config('app.IP_THREE')];
         $this->date = date('Y_m_d');
-        $this->username = env('API_USERNAME');
-        $this->password = env('API_PASSWORD');
-        $this->API_TOKEN = env('API_TOKEN');
+        $this->username = config('app.API_USERNAME');
+        $this->password = config('app.API_PASSWORD');
+        $this->API_TOKEN = config('app.API_TOKEN');
     }
 
     public function connection()
@@ -139,12 +139,12 @@ class GlobalServices
         }
     }
 
-    public function employeelocal($IP, $PIN, $MACHINE, $TOKEN)
+    public function employeelocal($IP, $PIN, $COMPANY, $TOKEN)
     {
         $url = "{$IP}/{$this->employeelocal}";
 
         $dataSend = [
-            "company" => $MACHINE->company,
+            "company" => $COMPANY,
             "kar_id" => $PIN
         ];
 

@@ -14,6 +14,13 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    'API_USERNAME' => env('API_USERNAME'),
+    'API_PASSWORD' => env('API_PASSWORD'),
+    'API_TOKEN' => env('API_TOKEN'),
+    'URL_TOKEN' => env('URL_TOKEN'),
+    'IP_ONE' => env('IP_ONE'),
+    'IP_TWO' => env('IP_TWO'),
+    'IP_THREE' => env('IP_THREE'),
 
     /*
     |--------------------------------------------------------------------------

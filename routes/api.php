@@ -23,3 +23,4 @@ Route::post('webhook', [WebhookController::class, 'receive']);
 Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
 Route::get('cronlocal/{id}/{day}', [WebhookController::class, 'cronlocal']);
 Route::get('worker', [WebhookController::class, 'worker']);
+Route::get('tes', [WebhookController::class, 'tes']);

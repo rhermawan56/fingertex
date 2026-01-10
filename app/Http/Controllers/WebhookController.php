@@ -270,7 +270,6 @@ class WebhookController extends BaseController
 
     private function userinfo($data)
     {
-
         $machine = Machine::where([
             'msn_status' => '1',
             'cloud_id' => $data->cloud_id
@@ -282,16 +281,18 @@ class WebhookController extends BaseController
 
         $checkCompanyUser = substr($data->data->pin, 0, 2);
         $userCompany = 'PT. KAHAPTEX';
+        $karId = $data->data->pin;
 
         if ($checkCompanyUser == '80') {
             $userCompany = "PT.SINAR TERANG";
+            $karId = substr($data->data->pin, 2);
         }
 
         if (!$employee) {
             $this->checkConnection();
             $this->login($this->ip);
 
-            $employeelocal = $this->global->employeelocal($this->ip, $data->data->pin, $machine, $this->JWT_KEY);
+            $employeelocal = $this->global->employeelocal($this->ip, $data->data->pin, $userCompany, $this->JWT_KEY);
             $employeelocal = (object) $employeelocal->json();
 
             if ($employeelocal->data) {
@@ -476,6 +477,10 @@ class WebhookController extends BaseController
         ])->get();
 
         $pin = collect($attendance)->pluck('karyawan_id')->unique()->values()->toArray();
+        $pin = collect($pin)->map(function ($item) {
+            $item = substr($item, 0, 2) == 80 ? substr($item, 2) : $item;
+            return $item;
+        });
 
         $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $machine, $this->JWT_KEY);
         $employeelocal = (object) $employeelocal->json();
@@ -483,29 +488,40 @@ class WebhookController extends BaseController
         if ($attendance) {
             foreach ($attendance as $k => &$v) {
                 $employeelocalFilter = collect($employeelocal->data)->filter(function ($item) use ($v) {
-                    return $item['kar_id'] == $v->karyawan_id;
+                    $karId = $item['kar_id'];
+                    if (stripos($v->company, 'SINAR TERANG') !== false || stripos($v->company, 'SINARTERANG') !== false) {
+                        $karId = "80{$item['kar_id']}";
+                    }
+                    return $karId == $v->karyawan_id;
                 })->values()->toArray();
+
                 if ($employeelocalFilter) {
                     $employeelocalFilter = (object) $employeelocalFilter[0];
+
                     $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
-                    $localattlog = (object) $localattlog->json();
+                    $localattlog = $localattlog->json();
 
-                    if (!$localattlog->data) {
-                        $save = collect($localattlog)->toArray();
-                        $save['karyawan_id'] = $v->karyawan_id;
-                        $save['karyawan'] = $v->karyawan_name;
+                    if ($localattlog) {
 
-                        $this->global->savelog(json_encode($save), $save, 'err_local_attlog');
-                    } else {
-                        Dashabsensi::where([
-                            "tgl_absen" => $v->tgl_absen,
-                            "status" => $v->status,
-                            "karyawan_id" => $v->karyawan_id,
-                            "cloud_id" => $v->cloud_id,
-                            "company" => $v->company
-                        ])->update([
-                            "status_upload" => $v->status_upload
-                        ]);
+                        $localattlog = (object) $localattlog;
+
+                        if (!$localattlog->data) {
+                            $save = collect($localattlog)->toArray();
+                            $save['karyawan_id'] = $v->karyawan_id;
+                            $save['karyawan'] = $v->karyawan_name;
+
+                            $this->global->savelog(json_encode($save), $save, 'err_local_attlog');
+                        } else {
+                            Dashabsensi::where([
+                                "tgl_absen" => $v->tgl_absen,
+                                "status" => $v->status,
+                                "karyawan_id" => $v->karyawan_id,
+                                "cloud_id" => $v->cloud_id,
+                                "company" => $v->company
+                            ])->update([
+                                "status_upload" => '1'
+                            ]);
+                        }
                     }
                 }
             }
@@ -519,5 +535,18 @@ class WebhookController extends BaseController
             '--tries' => 1,
             '--timeout' => 60,
         ]);
+    }
+
+    public function tes()
+    {
+        // Artisan::call('config:clear');
+        // Artisan::call('cache:clear');
+        // Artisan::call('view:clear');
+        // Artisan::call('route:clear');
+        // Artisan::call('config:cache');
+        // Artisan::call('view:cache');
+        // Artisan::call('route:cache');
+
+        echo 'ok';
     }
 }
