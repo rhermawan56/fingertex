@@ -438,13 +438,12 @@ class WebhookController extends BaseController
             }
         }
 
-        HitApiJob::dispatch("fingertex.test/api/cronlocal/{$id}/{$dateRequest}");
-
         echo 'ok';
     }
 
-    public function cronlocal($id, $day)
+    public function cronlocal($day)
     {
+        $company = 'PT KAHAPTEX';
         $currentDate = date('Y-m-d');
         $dateRequest = '';
 
@@ -461,20 +460,24 @@ class WebhookController extends BaseController
         $this->checkConnection();
         $this->login($this->ip);
 
-        $machine = Machine::where([
-            'msn_id' => $id,
-            'msn_status' => '1'
-        ])->first();
-
-        if (!$machine) {
+        $machineall = Machine::where([
+            'msn_status' => '1',
+            'company' => $company
+        ])->get();
+        if (!$machineall) {
             abort(404);
         }
+        $machineCompany = collect($machineall)->pluck('cloud_id')->unique()->values()->toArray();
 
         $attendance = Dashabsensi::where([
             'tgl_absen' => $dateRequest,
-            'cloud_id' => $machine->cloud_id,
-            'status_upload' => '0'
-        ])->get();
+            'status_upload' => '0',
+        ])
+        ->whereIn('cloud_id', $machineCompany)
+        ->limit(100)->get();
+        if (!$attendance) {
+            abort(404);
+        }
 
         $pin = collect($attendance)->pluck('karyawan_id')->unique()->values()->toArray();
         $pin = collect($pin)->map(function ($item) {
@@ -482,35 +485,66 @@ class WebhookController extends BaseController
             return $item;
         });
 
-        $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $machine, $this->JWT_KEY);
-        $employeelocal = (object) $employeelocal->json();
+        $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $company, $this->JWT_KEY);
+        $employeelocal = $employeelocal->json();
+        if (!$employeelocal['data']) {
+            abort(404);
+        }
+        $employeelocal = (object) $employeelocal;
 
-        if ($attendance) {
-            foreach ($attendance as $k => &$v) {
-                $employeelocalFilter = collect($employeelocal->data)->filter(function ($item) use ($v) {
-                    $karId = $item['kar_id'];
-                    if (stripos($v->company, 'SINAR TERANG') !== false || stripos($v->company, 'SINARTERANG') !== false) {
-                        $karId = "80{$item['kar_id']}";
-                    }
-                    return $karId == $v->karyawan_id;
+        $group = collect($employeelocal->data)->pluck('group')->unique()->values()->toArray();
+        $shift = $this->global->employeeshift($this->ip, $group, $company, $dateRequest, $this->JWT_KEY);
+        $shift = $shift->json();
+        if (!$shift['data']) {
+            abort(404);
+        }
+        $shift = (object) $shift;
+
+        foreach ($attendance as $k => &$v) {
+            $employeelocalFilter = collect($employeelocal->data)->filter(function ($item) use ($v) {
+                $karId = $item['kar_id'];
+                if (stripos($v->company, 'SINAR TERANG') !== false || stripos($v->company, 'SINARTERANG') !== false) {
+                    $karId = "80{$item['kar_id']}";
+                }
+                return $karId == $v->karyawan_id;
+            })->values()->toArray();
+
+            $machine = collect($machineall)->filter(function ($item) use ($v) {
+                return $item->cloud_id == $v->cloud_id;
+            })->values()->toArray();
+
+            if ($employeelocalFilter && $machine) {
+                $machine = (object) $machine[0];
+                $employeelocalFilter = (object) $employeelocalFilter[0];
+                $v->group = $employeelocalFilter->group;
+
+                $tglShift = $v->tgl_absen;
+                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') != false) {
+                    $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
+                }
+                $v->tgl_shift = $tglShift;
+
+                $shiftFilter = collect($shift->data)->filter(function ($item) use ($v) {
+                    return $item['drtgl'] <= $v->tgl_shift && $item['ketgl'] >= $v->tgl_shift && $item['id_group'] == $v->group;
                 })->values()->toArray();
 
-                if ($employeelocalFilter) {
-                    $employeelocalFilter = (object) $employeelocalFilter[0];
+                if ($shiftFilter) {
+                    $shiftFilter = (object) $shiftFilter[0];
+
+                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') != false) {
+                        $v->tgl_shift = $v->tgl_absen;
+                    }
 
                     $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
                     $localattlog = $localattlog->json();
 
                     if ($localattlog) {
-
                         $localattlog = (object) $localattlog;
 
                         if (!$localattlog->data) {
                             $save = collect($localattlog)->toArray();
                             $save['karyawan_id'] = $v->karyawan_id;
                             $save['karyawan'] = $v->karyawan_name;
-
-                            $this->global->savelog(json_encode($save), $save, 'err_local_attlog');
                         } else {
                             Dashabsensi::where([
                                 "tgl_absen" => $v->tgl_absen,
@@ -526,6 +560,141 @@ class WebhookController extends BaseController
                 }
             }
         }
+
+        echo 'ok';
+    }
+
+    public function cronlocal2($day)
+    {
+        $company = 'PT SINAR TERANG';
+        $currentDate = date('Y-m-d');
+        $dateRequest = '';
+
+        if ($day == 'now') {
+            $dateRequest = $currentDate;
+        } else if ($day == 'yesterday') {
+            $dateRequest = Carbon::parse($currentDate)->subDay()->toDateString();
+        } else if ($this->isValidDate($day)) {
+            $dateRequest = Carbon::parse($day)->toDateString();
+        } else {
+            abort(400, 'Format tanggal tidak valid');
+        }
+
+        $this->checkConnection();
+        $this->login($this->ip);
+
+        $machineall = Machine::where([
+            'msn_status' => '1',
+            'company' => $company
+        ])->get();
+        if (!$machineall) {
+            abort(404);
+        }
+        $machineCompany = collect($machineall)->pluck('cloud_id')->unique()->values()->toArray();
+
+        $attendance = Dashabsensi::where([
+            'tgl_absen' => $dateRequest,
+            'status_upload' => '0',
+        ])
+        ->whereIn('cloud_id', $machineCompany)
+        ->limit(100)->get();
+        if (!$attendance) {
+            abort(404);
+        }
+
+        $pin = collect($attendance)->pluck('karyawan_id')->unique()->values()->toArray();
+        $pin = collect($pin)->map(function ($item) {
+            $item = substr($item, 0, 2) == 80 ? substr($item, 2) : $item;
+            return $item;
+        });
+
+        $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $company, $this->JWT_KEY);
+        $employeelocal = $employeelocal->json();
+        if (!$employeelocal['data']) {
+            abort(404);
+        }
+        $employeelocal = (object) $employeelocal;
+
+        $group = collect($employeelocal->data)->pluck('group')->unique()->values()->toArray();
+        $shift = $this->global->employeeshift($this->ip, $group, $company, $dateRequest, $this->JWT_KEY);
+        $shift = $shift->json();
+        if (!$shift['data']) {
+            abort(404);
+        }
+        $shift = (object) $shift;
+
+        foreach ($attendance as $k => &$v) {
+            $employeelocalFilter = collect($employeelocal->data)->filter(function ($item) use ($v) {
+                $karId = $item['kar_id'];
+                if (stripos($v->company, 'SINAR TERANG') !== false || stripos($v->company, 'SINARTERANG') !== false) {
+                    $karId = "80{$item['kar_id']}";
+                }
+                return $karId == $v->karyawan_id;
+            })->values()->toArray();
+
+            $machine = collect($machineall)->filter(function ($item) use ($v) {
+                return $item->cloud_id == $v->cloud_id;
+            })->values()->toArray();
+
+            if ($employeelocalFilter && $machine) {
+                $machine = (object) $machine[0];
+                $employeelocalFilter = (object) $employeelocalFilter[0];
+                $v->group = $employeelocalFilter->group;
+
+                $tglShift = $v->tgl_absen;
+                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') != false) {
+                    $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
+                }
+                $v->tgl_shift = $tglShift;
+
+                $shiftFilter = collect($shift->data)->filter(function ($item) use ($v) {
+                    return $item['drtgl'] <= $v->tgl_shift && $item['ketgl'] >= $v->tgl_shift && $item['id_group'] == $v->group;
+                })->values()->toArray();
+
+                if ($shiftFilter) {
+                    $shiftFilter = (object) $shiftFilter[0];
+
+                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') != false) {
+                        $v->tgl_shift = $v->tgl_absen;
+                    }
+
+                    $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
+                    $localattlog = $localattlog->json();
+
+                    if ($localattlog) {
+                        $localattlog = (object) $localattlog;
+
+                        if (!$localattlog->data) {
+                            $save = collect($localattlog)->toArray();
+                            $save['karyawan_id'] = $v->karyawan_id;
+                            $save['karyawan'] = $v->karyawan_name;
+                        } else {
+                            Dashabsensi::where([
+                                "tgl_absen" => $v->tgl_absen,
+                                "status" => $v->status,
+                                "karyawan_id" => $v->karyawan_id,
+                                "cloud_id" => $v->cloud_id,
+                                "company" => $v->company
+                            ])->update([
+                                "status_upload" => '1'
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        echo 'ok';
+    }
+
+    public function queue($key, $day) {
+        if ($key == '1') {
+            HitApiJob::dispatch(url("api/cronlocal/{$day}"));
+        }
+
+        if ($key == '2') {
+            HitApiJob::dispatch(url("api/cronlocal2/{$day}"));
+        }
     }
 
     public function worker()
@@ -534,6 +703,7 @@ class WebhookController extends BaseController
             '--stop-when-empty' => true,
             '--tries' => 1,
             '--timeout' => 60,
+            // '--max-time' => 180
         ]);
     }
 
@@ -543,6 +713,8 @@ class WebhookController extends BaseController
         // Artisan::call('cache:clear');
         // Artisan::call('view:clear');
         // Artisan::call('route:clear');
+
+        sleep(5);
         // Artisan::call('config:cache');
         // Artisan::call('view:cache');
         // Artisan::call('route:cache');

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,7 @@ class GlobalServices
     public $loginUrl = "webhook_api/api/login";
     public $employeelocal = "webhook_api/api/get_employees";
     public $localattendance = "webhook_api/api/attendance_insert";
+    public $employeeshift = "webhook_api/api/shift";
 
     public $desc = [
         "0" => 'masuk',
@@ -151,17 +153,41 @@ class GlobalServices
         return Http::withToken($TOKEN)->post($url, $dataSend);
     }
 
-    public function allemployeelocal($IP, $PIN, $MACHINE, $TOKEN)
+    public function allemployeelocal($IP, $PIN, $COMPANY, $TOKEN)
     {
         $url = "{$IP}/{$this->employeelocal}";
 
         $dataSend = [
-            "company" => $MACHINE->company,
+            "company" => $COMPANY,
             "wherein" => [
                 [
                     'field' => 'kar_id',
                     'values' => $PIN
                 ]
+            ],
+            "select" =>  ['kar_id', 'nama', 'group'],
+            "start"  => 0,
+            "length" => 1000
+        ];
+
+        return Http::withToken($TOKEN)->post($url, $dataSend);
+    }
+
+    public function employeeshift($IP, $GROUP, $COMPANY, $DATE, $TOKEN) {
+        $url = "{$IP}/{$this->employeeshift}";
+        $now = $DATE;
+        $yesterday = Carbon::parse($now)->subDay()->toDateString();
+
+        $dataSend = [
+            'company' => $COMPANY,
+            'wherein' => [
+                [
+                    'field' => 'id_group',
+                    'values' => $GROUP
+                ]
+            ],
+            'raw' => [
+                "(drtgl <= '{$yesterday}' AND ketgl >= '{$yesterday}') OR (drtgl <= '{$now}' AND ketgl >= '{$now}')",
             ]
         ];
 
@@ -198,7 +224,7 @@ class GlobalServices
         $url = "{$IP}/{$this->localattendance}";
 
         $dataSend = [
-            "tgl_absen" => $data->tgl_absen,
+            "tgl_absen" => $data->tgl_shift,
             "jam" => $data->jam,
             "status" => $data->status,
             "karyawan_id" => $data->karyawan_id,

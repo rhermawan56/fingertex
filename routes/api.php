@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('webhook', [WebhookController::class, 'receive']);
 Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
-Route::get('cronlocal/{id}/{day}', [WebhookController::class, 'cronlocal']);
+Route::get('cronlocal/{day}', [WebhookController::class, 'cronlocal']);
+Route::get('cronlocal2/{day}', [WebhookController::class, 'cronlocal2']);
+Route::get('queue/{key}/{day}', [WebhookController::class, 'queue']);
 Route::get('worker', [WebhookController::class, 'worker']);
 Route::get('tes', [WebhookController::class, 'tes']);

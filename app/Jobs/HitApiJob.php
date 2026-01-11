@@ -31,7 +31,6 @@ class HitApiJob implements ShouldQueue
      */
     public function handle()
     {
-        sleep(10);
-        Http::timeout(15)->get($this->url);
+        Http::timeout(120)->get($this->url);
     }
 }
