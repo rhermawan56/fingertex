@@ -519,7 +519,7 @@ class WebhookController extends BaseController
                 $v->group = $employeelocalFilter->group;
 
                 $tglShift = $v->tgl_absen;
-                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') != false) {
+                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') > -1) {
                     $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
                 }
                 $v->tgl_shift = $tglShift;
@@ -531,7 +531,7 @@ class WebhookController extends BaseController
                 if ($shiftFilter) {
                     $shiftFilter = (object) $shiftFilter[0];
 
-                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') != false) {
+                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') > -1) {
                         $v->tgl_shift = $v->tgl_absen;
                     }
 
@@ -642,7 +642,7 @@ class WebhookController extends BaseController
                 $v->group = $employeelocalFilter->group;
 
                 $tglShift = $v->tgl_absen;
-                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') != false) {
+                if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') > -1) {
                     $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
                 }
                 $v->tgl_shift = $tglShift;
@@ -654,7 +654,7 @@ class WebhookController extends BaseController
                 if ($shiftFilter) {
                     $shiftFilter = (object) $shiftFilter[0];
 
-                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') != false) {
+                    if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') > -1) {
                         $v->tgl_shift = $v->tgl_absen;
                     }
 
