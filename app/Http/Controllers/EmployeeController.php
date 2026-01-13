@@ -253,7 +253,6 @@ class EmployeeController extends Controller
         $machine = Machine::where([
             'msn_status' => '1'
         ])
-        ->whereNotIn('msn_id', [14,15])
         ->get();
 
         if ($machine) {

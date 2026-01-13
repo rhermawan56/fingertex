@@ -38,8 +38,8 @@ class Employee extends Model
             $response = Http::post(
                 self::$loginUrl,
                 [
-                    'username' => env('API_USERNAME'),
-                    'password' => env('API_PASSWORD')
+                    'username' => config('app.API_USERNAME'),
+                    'password' => config('app.API_PASSWORD')
                 ]
             );
 
