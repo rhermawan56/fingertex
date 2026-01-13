@@ -100,10 +100,17 @@ class WebhookController extends BaseController
         }
 
         if ($data->type == 'get_userid_list') {
-            $processData = $this->userlist($data);
-            $processData = (object) $processData->getOriginalContent();
+            if ($data->cloud_id != 'E666C4D19B4AB630' && $data->cloud_id != 'E666C4D19B491330') {
+                $processData = $this->userlist($data);
+                $processData = (object) $processData->getOriginalContent();
 
-            if (!$processData->status) {
+                if (!$processData->status) {
+                    return response()->json([
+                        'status' => $processData->status,
+                        'messages' => $processData->messages
+                    ], $processData->status_response);
+                }
+
                 return response()->json([
                     'status' => $processData->status,
                     'messages' => $processData->messages
@@ -111,9 +118,9 @@ class WebhookController extends BaseController
             }
 
             return response()->json([
-                'status' => $processData->status,
-                'messages' => $processData->messages
-            ], $processData->status_response);
+                'status' => true,
+                'messages' => 'ok'
+            ], 200);
         }
 
         if ($data->type == 'get_userinfo') {
@@ -242,14 +249,86 @@ class WebhookController extends BaseController
             ], 404);
         }
 
+        // if ($data->cloud_id == 'C2622D141F372937') {
+        //     EmployeeMachine::where(['cloud_id' => $data->cloud_id])->delete();
+
+        //     foreach ($pin as $k => $v) {
+        //         $this->global->deleteuserinfo($k + 1, $v, $machine);
+        //     }
+        // }
+
         $employee = Employee::whereIn('kar_id', $pin)->get();
         $employee = collect($employee)->pluck('kar_id')->toArray();
+
+        $inEmployee = collect($pin)->filter(function ($item) use ($employee) {
+            return in_array($item, $employee);
+        })->values()->toArray();
 
         $notEmployee = collect(array_diff($pin, $employee))->values()->toArray();
 
         $this->checkConnection();
         $this->login($this->ip);
 
+        // in employee process
+        if ($inEmployee) {
+            // kahaptex process
+            $inEmployeekahap = collect($inEmployee)->filter(function ($item) {
+                return substr($item, 0, 2) != "80";
+            })->values()->toArray();
+
+            $machineemployeeall = EmployeeMachine::where([
+                'cloud_id' => $data->cloud_id
+            ])
+                ->whereIn('kar_id', $inEmployeekahap)
+                ->get();
+
+            $karInMachine = collect($machineemployeeall)->pluck('kar_id')->values()->toArray();
+            $arrayDiff = collect(array_diff($inEmployeekahap, $karInMachine))->values()->toArray();
+
+            if ($arrayDiff) {
+                foreach ($arrayDiff as $k => $v) {
+                    DB::statement(
+                        "INSERT INTO employee_machines
+                        (employee_id, kar_id, msn_id, cloud_id, em_creation)
+                        SELECT employee_id, kar_id, ?, ?, NOW()
+                        FROM employees
+                        WHERE kar_id = ?
+                        ",
+                        [$machine->msn_id, $machine->cloud_id, $v]
+                    );
+                }
+            }
+
+            // sinar terang process
+            $inEmployeesinter = collect($inEmployee)->filter(function ($item) {
+                return substr($item, 0, 2) == "80";
+            })->values()->toArray();
+
+            $machineemployeeall = EmployeeMachine::where([
+                'cloud_id' => $data->cloud_id
+            ])
+                ->whereIn('kar_id', $inEmployeesinter)
+                ->get();
+
+            $karInMachine = collect($machineemployeeall)->pluck('kar_id')->values()->toArray();
+            $arrayDiff = collect(array_diff($inEmployeesinter, $karInMachine))->values()->toArray();
+
+            if ($arrayDiff) {
+                foreach ($arrayDiff as $k => $v) {
+                    DB::statement(
+                        "INSERT INTO employee_machines
+                        (employee_id, kar_id, msn_id, cloud_id, em_creation)
+                        SELECT employee_id, kar_id, ?, ?, NOW()
+                        FROM employees
+                        WHERE kar_id = ?
+                        ",
+                        [$machine->msn_id, $machine->cloud_id, $v]
+                    );
+                }
+            }
+        }
+
+        // not employee process
         // kahaptex process
         $notEmployeekahap = collect($notEmployee)->filter(function ($item) {
             return substr($item, 0, 2) != 80;
@@ -271,9 +350,9 @@ class WebhookController extends BaseController
 
         if ($employeelocalkahap->data && $notEmployeekahap) {
             // Update data ke fingertex
-            // foreach ($arrayemployeelocalkahap as $k => $v) {
-            //     $this->global->userinfo($k + 1, $v, $machine);
-            // }
+            foreach ($arrayemployeelocalkahap as $k => $v) {
+                $this->global->userinfo($k + 1, $v, $machine);
+            }
         }
 
         // sinar terang process
@@ -294,19 +373,26 @@ class WebhookController extends BaseController
             $item = substr($item, 0, 2) == '80' ? substr($item, 2) : $item;
             return $item;
         })->values()->toArray();
-        $diffemployeesinter = collect(array_diff($notEmployeesinter, $arrayemployeelocalsintermap))->values()->toArray();
+        
+        $diffemployeesinter = collect(array_diff($notEmployeesinterMap, $arrayemployeelocalsintermap))->values()->toArray();
+        // dd($diffemployeesinter);
 
         // hapus data di mesin
         if ($diffemployeesinter && $notEmployeesinter) {
-            foreach ($diffemployeesinter as $k => $v) {
-                $this->global->deleteuserinfo($k + 1, $v, $machine);
-            }
+            // foreach ($diffemployeesinter as $k => $v) {
+            //     $this->global->deleteuserinfo($k + 1, $v, $machine);
+            // }
         }
 
         if ($employeelocalsinter->data && $notEmployeesinter) {
-            // foreach ($arrayemployeelocalsintermap as $k => $v) {
-            //     $this->global->userinfo($k + 1, $v, $machine);
-            // }
+            $arrayemployeelocalsintermap = collect($arrayemployeelocalsinter)->map(function ($item) {
+                $item = substr($item, 0, 2) == '80' ? $item : "80{$item}";
+                return $item;
+            })->values()->toArray();
+
+            foreach ($arrayemployeelocalsintermap as $k => $v) {
+                $this->global->userinfo($k + 1, $v, $machine);
+            }
         }
 
         return response()->json([
@@ -670,7 +756,7 @@ class WebhookController extends BaseController
                                     'kar_id' => $v->karyawan_id,
                                     'msn_id' => $machine->msn_id
                                 ])->first();
-                                
+
                                 $em = Employee::where(['kar_id' => $v->karyawan_id])->first();
 
                                 if (!$employeemachine) {
@@ -854,7 +940,7 @@ class WebhookController extends BaseController
         // Artisan::call('optimize');
 
         // sleep(1);
-        // Artisan::call('queue:work --once --tries=1');
+        Artisan::call('queue:work --stop-when-empty --tries=1');
 
         echo 'ok';
     }
