@@ -252,7 +252,9 @@ class EmployeeController extends Controller
         $sync = [];
         $machine = Machine::where([
             'msn_status' => '1'
-        ])->get();
+        ])
+        ->whereNotIn('msn_id', [14,15])
+        ->get();
 
         if ($machine) {
             foreach ($machine as $k => $v) {
