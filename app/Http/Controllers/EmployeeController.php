@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Machine;
 use App\Models\Role;
 use App\Models\Sub_menu;
+use App\Services\GlobalServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -13,14 +14,16 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
-    private $roleId, $role, $submenu, $routes;
+    private $roleId, $role, $submenu, $routes, $global;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct()
+    public function __construct(GlobalServices $global)
     {
+        $this->global = $global;
+
         $this->middleware(function ($request, $next) {
             $this->roleId = Auth::user()->role_id;
             $this->role = Role::where('id', $this->roleId)->first();
@@ -212,7 +215,7 @@ class EmployeeController extends Controller
                 if ($v['data'] == 'machine') {
                     $newData = collect($newData)->filter(function ($item) use ($v) {
                         return collect($item['machine'])->filter(function ($it) use ($v) {
-                            return preg_match('/'. preg_quote($v['search']['value'], '/') .'/i', $it['msn_name']);
+                            return preg_match('/' . preg_quote($v['search']['value'], '/') . '/i', $it['msn_name']);
                         })->toArray();
                     })->values()->all();
                 }
@@ -220,7 +223,7 @@ class EmployeeController extends Controller
                 if ($v['data'] == 'cloud_id') {
                     $newData = collect($newData)->filter(function ($item) use ($v) {
                         return collect($item['machine'])->filter(function ($it) use ($v) {
-                            return preg_match('/'. preg_quote($v['search']['value'], '/') .'/i', $it['cloud_id']);
+                            return preg_match('/' . preg_quote($v['search']['value'], '/') . '/i', $it['cloud_id']);
                         })->toArray();
                     })->values()->all();
                 }
@@ -244,14 +247,23 @@ class EmployeeController extends Controller
         ], 200);
     }
 
-    public function syncdata(Request $request) {
-        $data = Employee::syncdata($request);
-        $data = $data->getOriginalContent();
+    public function syncdata(Request $request)
+    {
+        $sync = [];
+        $machine = Machine::where([
+            'msn_status' => '1'
+        ])->get();
+
+        if ($machine) {
+            foreach ($machine as $k => $v) {
+                $this->global->fnallpin($k + 1, $v->cloud_id);
+            }
+        }
 
         return response()->json([
-            'status' => $data['status'],
-            'data' => $data['messages'],
-            'token' => csrf_token()
+            'status' => true,
+            'data' => $sync,
+            // 'token' => csrf_token()
         ], 200);
     }
 }
