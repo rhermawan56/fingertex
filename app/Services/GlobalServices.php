@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\AllPinJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,9 @@ class GlobalServices
     private $API_TOKEN;
     private $urlfs = "https://developer.fingerspot.io/api";
     private $userinfo = "get_userinfo";
+    private $deleteinfo = "delete_userinfo";
     public $attlog = "get_attlog";
+    private $allpin = "get_all_pin";
 
     public $loginUrl = "webhook_api/api/login";
     public $employeelocal = "webhook_api/api/get_employees";
@@ -167,13 +170,14 @@ class GlobalServices
             ],
             "select" =>  ['kar_id', 'nama', 'group'],
             "start"  => 0,
-            "length" => 1000
+            "length" => 3000
         ];
 
         return Http::withToken($TOKEN)->post($url, $dataSend);
     }
 
-    public function employeeshift($IP, $GROUP, $COMPANY, $DATE, $TOKEN) {
+    public function employeeshift($IP, $GROUP, $COMPANY, $DATE, $TOKEN)
+    {
         $url = "{$IP}/{$this->employeeshift}";
         $now = $DATE;
         $yesterday = Carbon::parse($now)->subDay()->toDateString();
@@ -201,6 +205,18 @@ class GlobalServices
             'trans_id' => $trans_id,
             'cloud_id' => $machine->cloud_id,
             'pin' => $pin
+        ];
+
+        return Http::withToken($this->API_TOKEN)->post($url, $dataSend);
+    }
+
+    public function deleteuserinfo($trans_id, $pin, $machine)
+    {
+        $url = "{$this->urlfs}/{$this->deleteinfo}";
+        $dataSend = [
+            "trans_id" => $trans_id,
+            "cloud_id" => $machine->cloud_id,
+            "pin" => $pin
         ];
 
         return Http::withToken($this->API_TOKEN)->post($url, $dataSend);
@@ -237,5 +253,18 @@ class GlobalServices
         ];
 
         return Http::withToken($TOKEN)->post($url, $dataSend);
+    }
+
+    public function fnallpin($transId, $cloudId)
+    {
+        
+        $url = "{$this->urlfs}/{$this->allpin}";
+
+        AllPinJob::dispatch($url, $this->API_TOKEN, $transId, $cloudId);
+
+        return response()->json([
+            'trans_id' => $transId,
+            'cloud_id' => $cloudId
+        ], 200);
     }
 }
