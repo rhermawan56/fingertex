@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Jobs\HitApiJob;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
-use App\Models\Attendance;
 use App\Models\Dashabsensi;
 use App\Models\Employee;
 use App\Models\EmployeeMachine;
@@ -16,6 +13,8 @@ use App\Models\Machine;
 use App\Services\GlobalServices;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 
 class WebhookController extends BaseController
 {
@@ -255,25 +254,26 @@ class WebhookController extends BaseController
         $notEmployeekahap = collect($notEmployee)->filter(function ($item) {
             return substr($item, 0, 2) != 80;
         })->values()->toArray();
+
         $employeelocalkahap = $this->global->allemployeelocal($this->ip, $notEmployeekahap, 'PT KAHAPTEX', $this->JWT_KEY);
         $employeelocalkahap = $employeelocalkahap->json();
 
-        if ($employeelocalkahap['data']) {
-            $employeelocalkahap = (object) $employeelocalkahap;
-            $arrayemployeelocalkahap = collect($employeelocalkahap->data)->pluck('kar_id')->unique()->values()->toArray();
-            // $diffemployeekahap = collect(array_diff($notEmployeekahap, $arrayemployeelocalkahap))->values()->toArray();
+        $employeelocalkahap = (object) $employeelocalkahap;
+        $arrayemployeelocalkahap = collect($employeelocalkahap->data)->pluck('kar_id')->unique()->values()->toArray();
+        $diffemployeekahap = collect(array_diff($notEmployeekahap, $arrayemployeelocalkahap))->values()->toArray();
 
-            // hapus data di mesin
-            // if ($diffemployeekahap) {
-            //     foreach ($diffemployeekahap as $k => $v) {
-            //         $this->global->deleteuserinfo($k+1, $v, $machine);
-            //     }
-            // }
-
-            // Update data ke fingertex
-            foreach ($arrayemployeelocalkahap as $k => $v) {
-                $this->global->userinfo($k + 1, $v, $machine);
+        // hapus data di mesin
+        if ($diffemployeekahap && $notEmployeekahap) {
+            foreach ($diffemployeekahap as $k => $v) {
+                $this->global->deleteuserinfo($k + 1, $v, $machine);
             }
+        }
+
+        if ($employeelocalkahap->data && $notEmployeekahap) {
+            // Update data ke fingertex
+            // foreach ($arrayemployeelocalkahap as $k => $v) {
+            //     $this->global->userinfo($k + 1, $v, $machine);
+            // }
         }
 
         // sinar terang process
@@ -288,25 +288,25 @@ class WebhookController extends BaseController
         $employeelocalsinter = $this->global->allemployeelocal($this->ip, $notEmployeesinterMap, 'PT SINAR TERANG', $this->JWT_KEY);
         $employeelocalsinter = $employeelocalsinter->json();
 
-        if ($employeelocalsinter['data']) {
-            $employeelocalsinter = (object) $employeelocalsinter;
-            $arrayemployeelocalsinter = collect($employeelocalsinter->data)->pluck('kar_id')->unique()->values()->toArray();
-            $arrayemployeelocalsintermap = collect($arrayemployeelocalsinter)->map(function ($item) {
-                $item = substr($item, 0, 2) == '80' ? substr($item, 2) : $item;
-                return $item;
-            })->values()->toArray();
-            // $diffemployeesinter = collect(array_diff($notEmployeesinter, $arrayemployeelocalsinter))->values()->toArray();
+        $employeelocalsinter = (object) $employeelocalsinter;
+        $arrayemployeelocalsinter = collect($employeelocalsinter->data)->pluck('kar_id')->unique()->values()->toArray();
+        $arrayemployeelocalsintermap = collect($arrayemployeelocalsinter)->map(function ($item) {
+            $item = substr($item, 0, 2) == '80' ? substr($item, 2) : $item;
+            return $item;
+        })->values()->toArray();
+        $diffemployeesinter = collect(array_diff($notEmployeesinter, $arrayemployeelocalsintermap))->values()->toArray();
 
-            // hapus data di mesin
-            // if ($diffemployeesinter) {
-            //     foreach ($diffemployeesinter as $k => $v) {
-            //         $this->global->deleteuserinfo($k + 1, $v, $machine);
-            //     }
-            // }
-
-            foreach ($arrayemployeelocalsintermap as $k => $v) {
-                $this->global->userinfo($k + 1, $v, $machine);
+        // hapus data di mesin
+        if ($diffemployeesinter && $notEmployeesinter) {
+            foreach ($diffemployeesinter as $k => $v) {
+                $this->global->deleteuserinfo($k + 1, $v, $machine);
             }
+        }
+
+        if ($employeelocalsinter->data && $notEmployeesinter) {
+            // foreach ($arrayemployeelocalsintermap as $k => $v) {
+            //     $this->global->userinfo($k + 1, $v, $machine);
+            // }
         }
 
         return response()->json([
@@ -400,6 +400,63 @@ class WebhookController extends BaseController
             'messages' => 'Success',
             'status_response' => 200
         ], 200);
+    }
+
+    public function registermachine($cloudid)
+    {
+        $date = date('Y_m_d');
+
+        $filename = "get_userid_list_{$date}.txt";
+
+        try {
+            $data = [];
+            $content = Storage::get($filename);
+            $lines = explode("\n", $content);
+
+            foreach ($lines as $line) {
+                $l = json_decode($line, true);
+                unset($l['type']);
+                $data[] = $l;
+            }
+
+            $data = collect($data)->filter(function ($item) {
+                return $item;
+            })->values()->toArray();
+
+            $data = collect($data)
+                ->filter(function ($item) use ($cloudid) {
+                    return $item['cloud_id'] == $cloudid;
+                })
+                ->values()
+                ->toArray();
+
+            $dataTotal = collect($data)->groupBy(function ($item) {
+                return $item['data']['total'];
+            });
+
+            $checkdata = $dataTotal->filter(function ($item) {
+                return $item->count() > 1;
+            })
+                ->keys()
+                ->values()
+                ->toArray();
+
+            if (!$checkdata) {
+                $this->global->fnallpin('100', $cloudid);
+            }
+
+            return response()->json([
+                'status' => true,
+                'messages' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'messages' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
     }
 
     public function cron($id, $day)
@@ -593,6 +650,8 @@ class WebhookController extends BaseController
                             $save = collect($localattlog)->toArray();
                             $save['karyawan_id'] = $v->karyawan_id;
                             $save['karyawan'] = $v->karyawan_name;
+
+                            $this->global->savelog(json_encode($save), $save, 'err_local_attlog');
                         } else {
                             Dashabsensi::where([
                                 "tgl_absen" => $v->tgl_absen,
@@ -603,6 +662,27 @@ class WebhookController extends BaseController
                             ])->update([
                                 "status_upload" => '1'
                             ]);
+
+                            $msnIdInclude = [14, 15];
+
+                            if (in_array($machine->msn_id, $msnIdInclude)) {
+                                $employeemachine = EmployeeMachine::where([
+                                    'kar_id' => $v->karyawan_id,
+                                    'msn_id' => $machine->msn_id
+                                ])->first();
+                                
+                                $em = Employee::where(['kar_id' => $v->karyawan_id])->first();
+
+                                if (!$employeemachine) {
+                                    EmployeeMachine::create([
+                                        "employee_id" => $em->em_id,
+                                        "kar_id" => $v->karyawan_id,
+                                        "msn_id" => $machine->msn_id,
+                                        "cloud_id" => $machine->cloud_id,
+                                        "em_creation" => date('Y-m-d')
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }
@@ -764,6 +844,7 @@ class WebhookController extends BaseController
         // Artisan::call('route:clear');
 
         // sleep(5);
+
         // Artisan::call('config:cache');
         // sleep(1);
         // Artisan::call('view:cache');
@@ -772,8 +853,8 @@ class WebhookController extends BaseController
         // sleep(1);
         // Artisan::call('optimize');
 
-        sleep(1);
-        Artisan::call('queue:work --once --tries=1');
+        // sleep(1);
+        // Artisan::call('queue:work --once --tries=1');
 
         echo 'ok';
     }

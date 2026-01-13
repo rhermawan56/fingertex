@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('webhook', [WebhookController::class, 'receive']);
+Route::get('registermachine/{cloudid}', [WebhookController::class, 'registermachine']);
 Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
 Route::get('cronlocal/{day}', [WebhookController::class, 'cronlocal']);
 Route::get('cronlocal2/{day}', [WebhookController::class, 'cronlocal2']);
