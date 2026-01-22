@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebhookController;
+use App\Http\Middleware\LogApiAccess;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('webhook', [WebhookController::class, 'receive']);
+Route::post('webhook', [WebhookController::class, 'receive'])->middleware(LogApiAccess::class);
 Route::get('registermachine/{cloudid}', [WebhookController::class, 'registermachine']);
 Route::get('cron/{id}/{day}', [WebhookController::class, 'cron']);
 Route::get('cronlocal/{day}', [WebhookController::class, 'cronlocal']);
