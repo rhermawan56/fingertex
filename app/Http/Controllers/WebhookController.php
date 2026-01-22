@@ -80,65 +80,67 @@ class WebhookController extends BaseController
         $data = (object) $jsonData;
 
         $log = $this->global->savelog($body, $jsonData, $jsonData->type);
-        $log = (object) $log->getOriginalContent();
+        // $log = (object) $log->getOriginalContent();
 
-        if ($data->type == 'attlog') {
-            $processData = $this->attlog($data);
-            $processData = (object) $processData->getOriginalContent();
+        // if ($data->type == 'attlog') {
+        //     $processData = $this->attlog($data);
+        //     $processData = (object) $processData->getOriginalContent();
 
-            if (!$processData->status) {
-                return response()->json([
-                    'status' => $processData->status,
-                    'messages' => $processData->messages
-                ], $processData->status_response);
-            }
+        //     if (!$processData->status) {
+        //         return response()->json([
+        //             'status' => $processData->status,
+        //             'messages' => $processData->messages
+        //         ], $processData->status_response);
+        //     }
 
-            return response()->json([
-                'status' => $processData->status,
-                'messages' => $processData->messages
-            ], $processData->status_response);
-        }
+        //     return response()->json([
+        //         'status' => $processData->status,
+        //         'messages' => $processData->messages
+        //     ], $processData->status_response);
+        // }
 
-        if ($data->type == 'get_userid_list') {
-            if ($data->cloud_id != 'E666C4D19B4AB630' && $data->cloud_id != 'E666C4D19B491330') {
-                $processData = $this->userlist($data);
-                $processData = (object) $processData->getOriginalContent();
+        // if ($data->type == 'get_userid_list') {
+        //     if ($data->cloud_id != 'E666C4D19B4AB630' && $data->cloud_id != 'E666C4D19B491330') {
+        //         $processData = $this->userlist($data);
+        //         $processData = (object) $processData->getOriginalContent();
 
-                if (!$processData->status) {
-                    return response()->json([
-                        'status' => $processData->status,
-                        'messages' => $processData->messages
-                    ], $processData->status_response);
-                }
+        //         if (!$processData->status) {
+        //             return response()->json([
+        //                 'status' => $processData->status,
+        //                 'messages' => $processData->messages
+        //             ], $processData->status_response);
+        //         }
 
-                return response()->json([
-                    'status' => $processData->status,
-                    'messages' => $processData->messages
-                ], $processData->status_response);
-            }
+        //         return response()->json([
+        //             'status' => $processData->status,
+        //             'messages' => $processData->messages
+        //         ], $processData->status_response);
+        //     }
 
-            return response()->json([
-                'status' => true,
-                'messages' => 'ok'
-            ], 200);
-        }
+        //     return response()->json([
+        //         'status' => true,
+        //         'messages' => 'ok'
+        //     ], 200);
+        // }
 
-        if ($data->type == 'get_userinfo') {
-            $processData = $this->userinfo($data);
-            $processData = (object) $processData->getOriginalContent();
+        // if ($data->type == 'get_userinfo') {
+        //     $processData = $this->userinfo($data);
+        //     $processData = (object) $processData->getOriginalContent();
 
-            if (!$processData->status) {
-                return response()->json([
-                    'status' => $processData->status,
-                    'messages' => $processData->messages
-                ], $processData->status_response);
-            }
+        //     if (!$processData->status) {
+        //         return response()->json([
+        //             'status' => $processData->status,
+        //             'messages' => $processData->messages
+        //         ], $processData->status_response);
+        //     }
 
-            return response()->json([
-                'status' => $processData->status,
-                'messages' => $processData->messages
-            ], $processData->status_response);
-        }
+        //     return response()->json([
+        //         'status' => $processData->status,
+        //         'messages' => $processData->messages
+        //     ], $processData->status_response);
+        // }
+
+        return response()->json($log, 200);
     }
 
     private function attlog($data)
@@ -344,7 +346,7 @@ class WebhookController extends BaseController
         // hapus data di mesin
         if ($diffemployeekahap && $notEmployeekahap) {
             foreach ($diffemployeekahap as $k => $v) {
-                $this->global->deleteuserinfo($k + 1, $v, $machine);
+                // $this->global->deleteuserinfo($k + 1, $v, $machine);
             }
         }
 
@@ -373,7 +375,7 @@ class WebhookController extends BaseController
             $item = substr($item, 0, 2) == '80' ? substr($item, 2) : $item;
             return $item;
         })->values()->toArray();
-        
+
         $diffemployeesinter = collect(array_diff($notEmployeesinterMap, $arrayemployeelocalsintermap))->values()->toArray();
         // dd($diffemployeesinter);
 
@@ -464,6 +466,14 @@ class WebhookController extends BaseController
                 ]);
             }
 
+            if (!$employee->employee_name_machine) {
+                Employee::where([
+                    'kar_id' => $data->data->pin
+                ])->update([
+                    "employee_name_machine" => $data->data->name
+                ]);
+            }
+
             $employeemachine = EmployeeMachine::where([
                 'kar_id' => $data->data->pin,
                 'msn_id' => $machine->msn_id,
@@ -537,6 +547,9 @@ class WebhookController extends BaseController
                 'data' => $data
             ], 200);
         } catch (\Exception $e) {
+
+            $this->global->fnallpin('100', $cloudid);
+
             return response()->json([
                 'status' => false,
                 'messages' => $e->getMessage(),
@@ -581,6 +594,8 @@ class WebhookController extends BaseController
             ->get();
 
         $employee = Employee::whereIn('kar_id', $pin)->get();
+
+        // dd($data->data);
 
         foreach ($data->data as $k => $v) {
             $attendanceDateTime = explode(' ', $v['scan_date']);

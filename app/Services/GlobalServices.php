@@ -99,15 +99,26 @@ class GlobalServices
         try {
             Storage::put($filename, $data);
 
-            return response()->json([
+            // return response()->json([
+            //     'status' => true,
+            //     'messages' => 'OK'
+            // ], 200);
+            // echo 'OK';
+            return [
                 'status' => true,
                 'messages' => 'OK'
-            ], 200);
+            ];
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'messages' => $e->getMessage()
-            ], 400);
+            // return response()->json([
+            //     'status' => false,
+            //     'messages' => $e->getMessage()
+            // ], 400);
+
+            // echo 'FAIL';
+            return [
+                'status' => true,
+                'messages' => 'FAIL'
+            ];
         }
     }
 
