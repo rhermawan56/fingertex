@@ -82,63 +82,63 @@ class WebhookController extends BaseController
         $log = $this->global->savelog($body, $jsonData, $jsonData->type);
         // $log = (object) $log->getOriginalContent();
 
-        // if ($data->type == 'attlog') {
-        //     $processData = $this->attlog($data);
-        //     $processData = (object) $processData->getOriginalContent();
+        if ($data->type == 'attlog') {
+            $processData = $this->attlog($data);
+            $processData = (object) $processData->getOriginalContent();
 
-        //     if (!$processData->status) {
-        //         return response()->json([
-        //             'status' => $processData->status,
-        //             'messages' => $processData->messages
-        //         ], $processData->status_response);
-        //     }
+            if (!$processData->status) {
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
+            }
 
-        //     return response()->json([
-        //         'status' => $processData->status,
-        //         'messages' => $processData->messages
-        //     ], $processData->status_response);
-        // }
+            return response()->json([
+                'status' => $processData->status,
+                'messages' => $processData->messages
+            ], $processData->status_response);
+        }
 
-        // if ($data->type == 'get_userid_list') {
-        //     if ($data->cloud_id != 'E666C4D19B4AB630' && $data->cloud_id != 'E666C4D19B491330') {
-        //         $processData = $this->userlist($data);
-        //         $processData = (object) $processData->getOriginalContent();
+        if ($data->type == 'get_userid_list') {
+            if ($data->cloud_id != 'E666C4D19B4AB630' && $data->cloud_id != 'E666C4D19B491330') {
+                $processData = $this->userlist($data);
+                $processData = (object) $processData->getOriginalContent();
 
-        //         if (!$processData->status) {
-        //             return response()->json([
-        //                 'status' => $processData->status,
-        //                 'messages' => $processData->messages
-        //             ], $processData->status_response);
-        //         }
+                if (!$processData->status) {
+                    return response()->json([
+                        'status' => $processData->status,
+                        'messages' => $processData->messages
+                    ], $processData->status_response);
+                }
 
-        //         return response()->json([
-        //             'status' => $processData->status,
-        //             'messages' => $processData->messages
-        //         ], $processData->status_response);
-        //     }
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
+            }
 
-        //     return response()->json([
-        //         'status' => true,
-        //         'messages' => 'ok'
-        //     ], 200);
-        // }
+            return response()->json([
+                'status' => true,
+                'messages' => 'ok'
+            ], 200);
+        }
 
-        // if ($data->type == 'get_userinfo') {
-        //     $processData = $this->userinfo($data);
-        //     $processData = (object) $processData->getOriginalContent();
+        if ($data->type == 'get_userinfo') {
+            $processData = $this->userinfo($data);
+            $processData = (object) $processData->getOriginalContent();
 
-        //     if (!$processData->status) {
-        //         return response()->json([
-        //             'status' => $processData->status,
-        //             'messages' => $processData->messages
-        //         ], $processData->status_response);
-        //     }
+            if (!$processData->status) {
+                return response()->json([
+                    'status' => $processData->status,
+                    'messages' => $processData->messages
+                ], $processData->status_response);
+            }
 
-        //     return response()->json([
-        //         'status' => $processData->status,
-        //         'messages' => $processData->messages
-        //     ], $processData->status_response);
-        // }
+            return response()->json([
+                'status' => $processData->status,
+                'messages' => $processData->messages
+            ], $processData->status_response);
+        }
 
         return response()->json($log, 200);
     }
