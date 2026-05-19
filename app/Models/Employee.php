@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -238,6 +239,8 @@ class Employee extends Model
                 }
             }
         }
+
+        $data = $data->whereNotNull('template');
 
         $response['rows'] = clone $data;
         $response['rows'] = $response['rows']->count();

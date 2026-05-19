@@ -34,6 +34,7 @@ class GlobalServices
         "5" => 'pulang lembur',
         "6" => 'masuk rapat',
         "7" => 'keluar rapat',
+        "8" => 'keluar rapat',
     ];
 
     public $verify = [

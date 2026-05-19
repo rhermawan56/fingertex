@@ -14,6 +14,7 @@ use App\Services\GlobalServices;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class WebhookController extends BaseController
@@ -451,6 +452,20 @@ class WebhookController extends BaseController
                         "em_creation" => date('Y-m-d H:i:s')
                     ]);
 
+                    $checkEmployee = Employee::where([
+                        'kar_id' => $data->data->pin,
+                        'template' => null
+                    ])->first();
+
+                    if ($checkEmployee) {
+                        Employee::where([
+                            'kar_id' => $data->data->pin
+                        ])->update([
+                            "employee_name_machine" => $data->data->name,
+                            "template" => $data->data->template
+                        ]);
+                    }
+
                     DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
@@ -652,6 +667,7 @@ class WebhookController extends BaseController
         $company = 'PT KAHAPTEX';
         $currentDate = date('Y-m-d');
         $dateRequest = '';
+        $mcn = Machine::where('cloud_id', 'C2633881231C0535')->first();
 
         if ($day == 'now') {
             $dateRequest = $currentDate;
@@ -671,7 +687,7 @@ class WebhookController extends BaseController
             'company' => $company
         ])->get();
         if (!$machineall) {
-            abort(404);
+            abort(404, 'machine not found!');
         }
         $machineCompany = collect($machineall)->pluck('cloud_id')->unique()->values()->toArray();
 
@@ -682,7 +698,7 @@ class WebhookController extends BaseController
             ->whereIn('cloud_id', $machineCompany)
             ->limit(100)->get();
         if (!$attendance) {
-            abort(404);
+            abort(404, 'attendance not found!');
         }
 
         $pin = collect($attendance)->pluck('karyawan_id')->unique()->values()->toArray();
@@ -694,7 +710,12 @@ class WebhookController extends BaseController
         $employeelocal = $this->global->allemployeelocal($this->ip, $pin, $company, $this->JWT_KEY);
         $employeelocal = $employeelocal->json();
         if (!$employeelocal['data']) {
-            abort(404);
+            $tes = Dashabsensi::where('tgl_absen', $dateRequest)
+                ->where('status_upload', '0')
+                ->whereIn('karyawan_id', $pin)
+                ->update([
+                    'status_upload' => '1'
+                ]);
         }
         $employeelocal = (object) $employeelocal;
 
@@ -714,6 +735,10 @@ class WebhookController extends BaseController
                 }
                 return $karId == $v->karyawan_id;
             })->values()->toArray();
+
+            // if (!$employeelocalFilter) {
+            //     dd($v);
+            // }
 
             $machine = collect($machineall)->filter(function ($item) use ($v) {
                 return $item->cloud_id == $v->cloud_id;
@@ -787,6 +812,18 @@ class WebhookController extends BaseController
                         }
                     }
                 }
+
+                // $checkEmployee = Employee::where('kar_id', $v->karyawan_id)
+                // ->where(function ($q) {
+                //     $q->where('employee_name_machine', null)
+                //         ->orWhere('template', null);
+                // })
+                // ->first();
+
+
+                // if ($checkEmployee) {
+                //     $this->global->userinfo(101, $v->karyawan_id, $mcn);
+                // }
             }
         }
 
@@ -927,6 +964,226 @@ class WebhookController extends BaseController
         }
     }
 
+    public function resignEmployees()
+    {
+        $employees = Employee::where('employee_company', 'like', '%kahaptex%')
+            ->pluck('kar_id')
+            ->toArray();
+
+        if (!$employees) {
+            abort(404, 'Employee datas not found!');
+        }
+
+        $this->checkConnection();
+        $this->login($this->ip);
+
+        $employeelocal = $this->global->allemployeelocal($this->ip, $employees, 'PT KAHAPTEX', $this->JWT_KEY);
+        $employeelocal = $employeelocal->json();
+
+        if ($employeelocal['rows'] > 0) {
+            $employeelocalcollection = collect($employeelocal['data'])
+                ->pluck('kar_id')
+                ->toArray();
+
+            $employeeResign = collect($employees)->filter(function ($item) use ($employeelocalcollection) {
+                return !in_array($item, $employeelocalcollection);
+            })
+                ->values()
+                ->toArray();
+
+            $machineEmployee = EmployeeMachine::whereIn('kar_id', $employeeResign)
+                // ->where('cloud_id', '=', 'D96584729B245D34')
+                ->limit(200)
+                ->get();
+
+            if (!$machineEmployee) {
+                abort(404, 'Machine employees not found!');
+            }
+
+            foreach ($machineEmployee as $k => $v) {
+                $trans_id = $k + 1;
+                $kar_id = $v->kar_id;
+                $deleteUser = $this->global->deleteuserinfo($trans_id, $kar_id, $v);
+                $deleteUser = $deleteUser->json();
+
+                if ($deleteUser['success']) {
+                    EmployeeMachine::where('kar_id', $kar_id)
+                        ->where('cloud_id', $v->cloud_id)
+                        ->delete();
+                }
+            }
+
+            return response()->json(
+                [
+                    'status' => 'true',
+                    'data' => [
+                        'status' => 'true',
+                        'data' => $machineEmployee
+                    ]
+                ]
+            );
+        }
+
+        return response()->json([
+            'status' => 'true',
+            'data' => [
+                'status' => 'false',
+                'messages' => 'Employees Local Data Not Found!'
+            ]
+        ]);
+    }
+
+    public function resignEmployeesSinter()
+    {
+        $employees = Employee::where('employee_company', 'like', '%SINAR TERANG%')
+            ->pluck('kar_id')
+            ->toArray();
+
+        if (!$employees) {
+            abort(404, 'Employee datas not found!');
+        }
+
+        $this->checkConnection();
+        $this->login($this->ip);
+
+        $employeesValue = collect($employees)->map(function ($item) {
+            if (substr($item, 0, 2) == '80') {
+                $item = substr($item, 2);
+            }
+
+            return $item;
+        })->toArray();
+
+        $employeelocal = $this->global->allemployeelocal($this->ip, $employeesValue, 'PT. SINAR TERANG', $this->JWT_KEY);
+        $employeelocal = $employeelocal->json();
+
+        if ($employeelocal['rows'] > 0) {
+            $employeelocalcollection = collect($employeelocal['data'])
+                ->pluck('kar_id');
+
+            $employeelocalcollection = $employeelocalcollection->map(function ($item) {
+                $item = "80" . $item;
+
+                return $item;
+            })->toArray();
+
+            $employeeResign = collect($employees)->filter(function ($item) use ($employeelocalcollection) {
+                return !in_array($item, $employeelocalcollection);
+            })
+                ->values()
+                ->toArray();
+
+            $machineEmployee = EmployeeMachine::whereIn('kar_id', $employeeResign)
+                ->where('cloud_id', '!=', 'D96584729B245D34')
+                ->limit(200)
+                ->get();
+
+            if (!$machineEmployee) {
+                abort(404, 'Machine employees not found!');
+            }
+
+            foreach ($machineEmployee as $k => $v) {
+                $trans_id = $k + 1;
+                $kar_id = $v->kar_id;
+                $deleteUser = $this->global->deleteuserinfo($trans_id, $kar_id, $v);
+                $deleteUser = $deleteUser->json();
+
+                if ($deleteUser['success']) {
+                    EmployeeMachine::where('kar_id', $kar_id)
+                        ->where('cloud_id', $v->cloud_id)
+                        ->delete();
+                }
+            }
+
+            return response()->json(
+                [
+                    'status' => 'true',
+                    'data' => [
+                        'status' => 'true',
+                        'data' => $machineEmployee
+                    ]
+                ]
+            );
+        }
+
+        return response()->json([
+            'status' => 'true',
+            'data' => [
+                'status' => 'false',
+                'messages' => 'Employees Local Data Not Found!'
+            ]
+        ]);
+    }
+
+    public function sentData($key1, $key2)
+    {
+        $employees = Employee::join('employee_machines', 'employees.employee_id', '=', 'employee_machines.employee_id')
+            ->where('employee_machines.cloud_id', $key1)
+            ->whereNotNull('template')
+            ->get();
+
+        $this->checkConnection();
+        $this->login($this->ip);
+
+        $setUser = "{$this->ip}/webhook_api/api/set_userinfo";
+
+
+
+        if ($employees) {
+            foreach ($employees as $k => $v) {
+                $dataSend = [
+                    "trans_id" => "1",
+                    "cloud_id" => "{$key2}",
+                    "data" => [
+                        "pin" => "{$v->kar_id}",
+                        "name" => "{$v->employee_name_machine}",
+                        // "privilege" => "{$userFileJsonUnique->data['privilege']}",
+                        "privilege" => "1",
+                        "password" => "{$v->template}",
+                        "rfid" => "{$v->template}",
+                        "template" => "{$v->template}",
+                    ]
+                ];
+
+                Http::withToken($this->JWT_KEY)->post($setUser, $dataSend);
+            }
+
+            return response()->json([
+                'status' => true,
+                'messages' => 'Success',
+                'status_response' => 200
+            ], 200);
+        }
+    }
+
+    public function deleteUserMachine($key)
+    {
+        $employees = Employee::join('employee_machines', 'employees.employee_id', '=', 'employee_machines.employee_id')
+            ->where('employee_machines.cloud_id', $key)
+            ->get();
+
+        $this->checkConnection();
+        $this->login($this->ip);
+
+        $deleteUser = "{$this->ip}/webhook_api/api/delete_userinfo";
+
+        foreach ($employees as $k => $v) {
+            $dataSend = [
+                "trans_id" => $k + 1,
+                "cloud_id" => "{$key}",
+                "pin" => "{$v->kar_id}"
+            ];
+
+            Http::withToken($this->JWT_KEY)->post($deleteUser, $dataSend);
+        }
+
+        return response()->json([
+            'status' => true,
+            'messages' => 'Success',
+            'status_response' => 200
+        ], 200);
+    }
+
     public function worker()
     {
         Artisan::call('queue:work', [
@@ -946,16 +1203,16 @@ class WebhookController extends BaseController
 
         // sleep(5);
 
-        // Artisan::call('config:cache');
-        // sleep(1);
-        // Artisan::call('view:cache');
-        // sleep(1);
-        // Artisan::call('route:cache');
-        // sleep(1);
-        // Artisan::call('optimize');
+        Artisan::call('config:cache');
+        sleep(1);
+        Artisan::call('view:cache');
+        sleep(1);
+        Artisan::call('route:cache');
+        sleep(1);
+        Artisan::call('optimize');
 
         // sleep(1);
-        Artisan::call('queue:work --stop-when-empty --tries=1');
+        // Artisan::call('queue:work --stop-when-empty --tries=1');
 
         echo 'ok';
     }
