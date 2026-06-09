@@ -766,6 +766,11 @@ class WebhookController extends BaseController
                         $v->tgl_shift = $v->tgl_absen;
                     }
 
+                    if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') > -1) {
+                        $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
+                    }
+                    $v->tgl_shift = $tglShift;
+
                     $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
                     $localattlog = $localattlog->json();
 
@@ -923,6 +928,11 @@ class WebhookController extends BaseController
                     if ($shiftFilter->id_shift == 'Shift 1' && stripos($v->status, 'pulang') > -1) {
                         $v->tgl_shift = $v->tgl_absen;
                     }
+
+                    if (substr($v->jam, 0, 2) > -1 && substr($v->jam, 0, 2) <= 7 && stripos($v->status, 'pulang') > -1) {
+                        $tglShift = Carbon::parse($v->tgl_absen)->subDay()->toDateString();
+                    }
+                    $v->tgl_shift = $tglShift;
 
                     $localattlog = $this->global->localattlog($this->ip, $machine, $this->JWT_KEY, $v);
                     $localattlog = $localattlog->json();
